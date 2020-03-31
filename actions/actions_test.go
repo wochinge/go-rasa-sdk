@@ -11,7 +11,7 @@ import (
 
 type SimpleTestAction struct{}
 func (action *SimpleTestAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
-	return []events.Event{events.Slot{Name: "test-slot", Value: "test-value"}}
+	return []events.Event{&events.SlotSet{Name: "test-slot", Value: "test-value"}}
 }
 func (action *SimpleTestAction) Name() string {return "test-action"}
 
@@ -21,7 +21,7 @@ func TestActionReturningEvents(t *testing.T) {
 
 	newEvents := action.Run(&rasa.Tracker{}, &rasa.Domain{}, responses.NewDispatcher())
 
-	expectedEvents := []events.Event{events.Slot{Name: "test-slot", Value: "test-value"}}
+	expectedEvents := []events.Event{&events.SlotSet{Name: "test-slot", Value: "test-value"}}
 	assert.ElementsMatch(t, expectedEvents, newEvents)
 }
 
@@ -70,7 +70,7 @@ func TestActionResponseWithMultipleResponses(t *testing.T) {
 }
 
 func TestActionResponseWithEvents(t *testing.T) {
-	newEvents := []events.Event{events.Restart(), events.SetSlot("my cool slot", "best value")}
+	newEvents := []events.Event{&events.Restarted{}, &events.SlotSet{Name:"my cool slot", Value: "best value"}}
 
 	response  := ActionResponse(newEvents,responses. NewDispatcher())
 	actualAsJson, err := json.Marshal(response)

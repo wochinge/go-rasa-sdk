@@ -14,7 +14,7 @@ type Tracker struct {
 	Events             []events.Event
 	Paused             bool                   `json:"paused"`
 	FollowUpAction     string                 `json:"followup_action"`
-	ActiveForm         map[string]interface{} `json:"action_form"` // TODO: Maybe this is a string?
+	ActiveForm         map[string]interface{} `json:"action_form"`
 	LatestActionName   string                 `json:"latest_action_name"`
 	LatestInputChannel string                 `json:"latest_input_channel"`
 }

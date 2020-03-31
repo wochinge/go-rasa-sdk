@@ -28,7 +28,7 @@ func TestHealth(t *testing.T) {
 
 type TestAction struct {}
 func (action *TestAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
-	return []events.Event{events.Restart()}
+	return []events.Event{&events.Restarted{}}
 }
 func (action *TestAction) Name() string {return "test-action"}
 
