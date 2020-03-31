@@ -16,6 +16,12 @@ func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 	}
 
 	parsedRequest.Domain = sanitizeDomain(parsedRequest.Domain)
+
+	if parsedRequest.Tracker.RawEvents == nil {
+		parsedRequest.Tracker.Events = []events.Event{}
+		return parsedRequest, nil
+	}
+
 	trackerEvents, err := events.Parsed(parsedRequest.Tracker.RawEvents)
 
 	if err != nil {

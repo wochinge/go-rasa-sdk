@@ -1,53 +1,43 @@
 package actions
 
 import (
-	"encoding/json"
+	"fmt"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 )
 
 type Action interface {
-	Run(tracker *rasa.Tracker, domain *rasa.Domain, dispatcher ResponseDispatcher) []events.Event
+	Run(tracker *rasa.Tracker, domain *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event
 	Name() string
 }
 
-func ActionFor(name string, actions []Action) (Action, error) {
+func ExecuteAction(actionRequest rasa.CustomActionRequest, availableActions []Action) (map[string]interface{}, error) {
+	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
+
+	if actionToRun == nil {
+		return nil, fmt.Errorf("action with this name not found")
+	}
+
+	dispatcher := responses.NewDispatcher()
+	newEvents := actionToRun.Run(&actionRequest.Tracker, &actionRequest.Domain, dispatcher)
+
+	responseBody := ActionResponse(newEvents, dispatcher)
+	return responseBody, nil
+}
+
+func actionFor(name string, actions []Action) Action {
 	for _, action := range actions {
 		if action.Name() == name {
-			return action, nil
+			return action
 		}
 	}
-	return nil, nil
+	return nil
 }
 
-type ResponseDispatcher interface {
-	Utter(responses.BotMessage)
-
-	Responses() []responses.BotMessage
-}
-
-type responseDispatcher struct {
-	responses []responses.BotMessage
-}
-
-func (dispatcher *responseDispatcher) Utter(message responses.BotMessage) {
-	dispatcher.responses = append(dispatcher.responses, message)
-}
-
-func (dispatcher *responseDispatcher) Responses() []responses.BotMessage {
-	return dispatcher.responses
-}
-
-func NewDispatcher() ResponseDispatcher {
-	return &responseDispatcher{responses: []responses.BotMessage{}}
-}
-
-func ActionResponse(newEvents []events.Event, dispatcher ResponseDispatcher) ([]byte, error) {
-	response := map[string]interface{}{
+func ActionResponse(newEvents []events.Event, dispatcher responses.ResponseDispatcher) map[string]interface{} {
+	return map[string]interface{}{
 		"events": newEvents,
 		"responses": dispatcher.Responses(),
 	}
-
-	return json.Marshal(response)
 }

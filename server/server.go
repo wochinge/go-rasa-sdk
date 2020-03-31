@@ -14,6 +14,11 @@ type healthResponse struct {
 	Status string `json:"status"`
 }
 
+type errorResponse struct {
+	Error      string `json:"error"`
+	ActionName string `json:"action_name"`
+}
+
 func health(w http.ResponseWriter, _ *http.Request) {
 	responseBody := healthResponse{"ok"}
 
@@ -21,35 +26,30 @@ func health(w http.ResponseWriter, _ *http.Request) {
 }
 
 func runAction(availableActions []actions.Action) func(http.ResponseWriter, *http.Request) {
-	return func (w http.ResponseWriter, r *http.Request) {
-
+	return func(w http.ResponseWriter, r *http.Request) {
 		actionRequest, err := rasa.Parsed(r.Body)
 		if err != nil {
-			return // TODO
+			sendJSONResponse(w, errorResponse{Error: fmt.Sprintf("parsing body failed with error: %v", err)},
+				http.StatusBadRequest)
+			return
 		}
 
-		actionToRun, err := actions.ActionFor(actionRequest.ActionToRun, availableActions)
+		responseBody, err := actions.ExecuteAction(actionRequest, availableActions)
 
 		if err != nil {
-
+			sendJSONResponse(w, errorResponse{Error: fmt.Sprintf("Action execution failed with error: %v.", err)},
+				http.StatusNotFound)
+			return
 		}
-
-		dispatcher := actions.NewDispatcher()
-		newEvents := actionToRun.Run(&actionRequest.Tracker, &actionRequest.Domain, dispatcher)
-		fmt.Printf("%v", newEvents)
-		// parse request
-		// Run action
-		// marshall events + responses
-
+		sendJSONResponse(w, responseBody, http.StatusOK)
 	}
 }
-
 
 func sendJSONResponse(writer http.ResponseWriter, responseBody interface{}, status int) {
 	serialized, _ := json.Marshal(responseBody)
 
 	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
+	writer.WriteHeader(status)
 	writer.Write(serialized)
 }
 
@@ -63,8 +63,8 @@ func GetRouter(actions ...actions.Action) http.Handler {
 }
 
 // Serve runs the action server on port port.
-func Serve(port int) error {
+func Serve(port int, actions ...actions.Action) error {
 	fmt.Printf("Running Rasa action server on port '%v'.\n", port)
 	address := fmt.Sprintf(":%v", port)
-	return http.ListenAndServe(address, GetRouter())
+	return http.ListenAndServe(address, GetRouter(actions...))
 }

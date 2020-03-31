@@ -1,5 +1,27 @@
 package responses
 
+type ResponseDispatcher interface {
+	Utter(BotMessage)
+
+	Responses() []BotMessage
+}
+
+type responseDispatcher struct {
+	responses []BotMessage
+}
+
+func (dispatcher *responseDispatcher) Utter(message BotMessage) {
+	dispatcher.responses = append(dispatcher.responses, message)
+}
+
+func (dispatcher *responseDispatcher) Responses() []BotMessage {
+	return dispatcher.responses
+}
+
+func NewDispatcher() ResponseDispatcher {
+	return &responseDispatcher{responses: []BotMessage{}}
+}
+
 type Button struct {
 	Title   string `json:"title"`
 	PayLoad string `json:"payload"`
