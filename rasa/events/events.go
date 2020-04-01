@@ -47,8 +47,6 @@ func Parsed(rawEvents []json.RawMessage) ([]Event, error) {
 				return []Event{}, err
 			}
 			events = append(events, event)
-		} else {
-			events = append(events, &minimalEvent)
 		}
 	}
 
@@ -134,6 +132,16 @@ type ParseData struct {
 	Text          string              `json:"text"`
 }
 
+
+func (data ParseData) EntityFor(name string) (string, bool) {
+	for _, entity := range data.Entities {
+		if entity.Name == name {
+			return entity.Value, true
+		}
+	}
+	return "", false
+}
+
 type IntentParseResult struct {
 	Name       string  `json:"name"`
 	Confidence float64 `json:"confidence"`
@@ -206,7 +214,7 @@ func (_ *AllSlotsReset) EventType() Type {return allSlotsReset}
 
 type Form struct {
 	Base
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 func (_ *Form) EventType() Type {return form}
 

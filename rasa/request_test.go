@@ -15,9 +15,7 @@ func TestParsedMinimalRequest(t *testing.T) {
 	reader, err := os.Open(path)
 	parsed, err := Parsed(reader)
 
-	if err != nil {
-		t.Fatalf("Parsing the JSON failed with %s", err)
-	}
+	assert.Nil(t, err)
 
 	expectedAction := "action_hello_world"
 	assert.Equal(t, parsed.ActionToRun, expectedAction)
@@ -38,9 +36,7 @@ func TestParsedDomain(t *testing.T) {
 	reader, err := os.Open(path)
 	parsed, err := Parsed(reader)
 
-	if err != nil {
-		t.Fatalf("Parsing the JSON failed with %s", err)
-	}
+	assert.Nil(t, err)
 
 	domain := parsed.Domain
 
@@ -96,9 +92,7 @@ func TestParsedSmallTracker(t *testing.T) {
 	reader, err := os.Open(path)
 	parsed, err := Parsed(reader)
 
-	if err != nil {
-		t.Fatalf("Parsing the JSON failed with %s", err)
-	}
+	assert.Nil(t, err)
 
 	assert.Equal(t, "wochinge", parsed.Tracker.ConversationId,)
 	assert.Equal(t, false, parsed.Tracker.Paused, )
@@ -137,9 +131,7 @@ func TestParseTrackerEvents(t *testing.T) {
 	reader, err := os.Open(path)
 	parsed, err := Parsed(reader)
 
-	if err != nil {
-		t.Fatalf("Parsing the JSON failed with %s", err)
-	}
+	assert.Nil(t, err)
 
 	expectedEvents := []events.Event{
 		&events.Action{Base: events.Base{Type: "action", Timestamp: 1584966507.4802880287}, Name: "action_session_start"},
@@ -174,4 +166,13 @@ func TestParseTrackerEvents(t *testing.T) {
 	assert.ElementsMatch(t, parsed.Tracker.Events, expectedEvents)
 }
 
+func TestParsedActiveForm(t *testing.T) {
+	path := filepath.Join("testdata", "../../test/request_with_active_form.json") // relative path
+	reader, err := os.Open(path)
+	parsed, err := Parsed(reader)
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, parsed.Tracker.ActiveForm, ActiveForm{Name: "my-form", Validate:true, Rejected:false, TriggerMessage:events.ParseData{}})
+}
 // TODO Test active form field

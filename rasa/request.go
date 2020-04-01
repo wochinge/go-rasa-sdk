@@ -8,6 +8,7 @@ import (
 
 func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 	var parsedRequest CustomActionRequest
+	parsedRequest.Tracker = *EmptyTracker()
 
 	decoder := json.NewDecoder(requestBody)
 

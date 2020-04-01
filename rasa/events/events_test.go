@@ -23,3 +23,20 @@ func TestEventType(t *testing.T) {
 		assert.True(t, eventType == event.EventType())
 	}
 }
+
+func TestParsedDataEntityFor(t *testing.T) {
+	name, expectedValue := "user name", "Maria"
+
+	parsed := ParseData{Entities:[]Entity{{Name: "other", Value:"doesnt matter"}, {Name: name, Value: expectedValue}}}
+
+	actualValue, found := parsed.EntityFor(name)
+	assert.True(t, found)
+	assert.Equal(t, expectedValue, actualValue)
+}
+
+func TestParsedDataEntityForNotExisting(t *testing.T) {
+	parsed := ParseData{Entities:[]Entity{{Name: "other", Value:"doesnt matter"}}}
+
+	_, found := parsed.EntityFor("not there")
+	assert.False(t, found)
+}
