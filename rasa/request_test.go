@@ -6,6 +6,7 @@ import (
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -21,6 +22,15 @@ func TestParsedMinimalRequest(t *testing.T) {
 	expectedAction := "action_hello_world"
 	assert.Equal(t, parsed.ActionToRun, expectedAction)
 	// TODO: Check for empty tracker and domain
+}
+
+func TestParsedInvalidEvents(t *testing.T) {
+	invalidJson := `{"tracker": {"events": [[]]}}`
+
+	parsed, err := Parsed(strings.NewReader(invalidJson))
+
+	assert.NotNil(t, err)
+	assert.Empty(t, parsed.Tracker.Events)
 }
 
 func TestParsedDomain(t *testing.T) {

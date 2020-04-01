@@ -83,6 +83,13 @@ func eventParser(base Base) (func() Event, bool) {
 	return eventCreator, found
 }
 
+func WithTypeKeys(events ...Event)[]Event {
+	for _, event := range events {
+		event.SetType(event.EventType())
+	}
+	return events
+}
+
 type Event interface {
 	EventType() Type
 	SetType(Type)

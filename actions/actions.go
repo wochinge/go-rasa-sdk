@@ -36,12 +36,8 @@ func actionFor(name string, actions []Action) Action {
 }
 
 func ActionResponse(newEvents []events.Event, dispatcher responses.ResponseDispatcher) map[string]interface{} {
-	for _, event := range newEvents {
-		event.SetType(event.EventType())
-	}
-
 	return map[string]interface{}{
-		"events": newEvents,
+		"events": events.WithTypeKeys(newEvents...),
 		"responses": dispatcher.Responses(),
 	}
 }
