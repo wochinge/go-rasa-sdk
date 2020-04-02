@@ -11,31 +11,24 @@ import (
 )
 
 func TestParsedMinimalRequest(t *testing.T) {
-	path := filepath.Join("testdata", "../../test/minimal_request.json") // relative path
-	reader, err := os.Open(path)
-	parsed, err := Parsed(reader)
-
+	parsed, err := parsedJSON("minimal_request.json")
 	assert.Nil(t, err)
 
 	expectedAction := "action_hello_world"
 	assert.Equal(t, parsed.ActionToRun, expectedAction)
-	// TODO: Check for empty tracker and domain
 }
 
 func TestParsedInvalidEvents(t *testing.T) {
-	invalidJson := `{"tracker": {"events": [[]]}}`
+	invalidJSON := `{"tracker": {"events": [[]]}}`
 
-	parsed, err := Parsed(strings.NewReader(invalidJson))
+	parsed, err := Parsed(strings.NewReader(invalidJSON))
 
 	assert.NotNil(t, err)
 	assert.Empty(t, parsed.Tracker.Events)
 }
 
-func TestParsedDomain(t *testing.T) {
-	path := filepath.Join("testdata", "../../test/request_with_domain.json") // relative path
-	reader, err := os.Open(path)
-	parsed, err := Parsed(reader)
-
+func TestParsedDomainActions(t *testing.T) {
+	parsed, err := parsedJSON("request_With_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -49,111 +42,129 @@ func TestParsedDomain(t *testing.T) {
 		"respond_out_of_scope",
 		"utter_already_subscribed",
 		"utter_also_explain_core"}
-	assert.ElementsMatch(t, domain.Actions, expectedActions, )
+	assert.ElementsMatch(t, domain.Actions, expectedActions)
+}
+
+func TestParsedDomainConfig(t *testing.T) {
+	parsed, err := parsedJSON("request_With_domain.json")
+	assert.Nil(t, err)
+
+	domain := parsed.Domain
 
 	expectedSessionConfig := SessionConfig{123.45, true}
 	assert.Equal(t, domain.SessionConfig, expectedSessionConfig)
 
 	expectedConfig := Config{true}
 	assert.Equal(t, domain.Config, expectedConfig)
+}
+
+func TestParsedDomainIntents(t *testing.T) {
+	parsed, err := parsedJSON("request_With_domain.json")
+	assert.Nil(t, err)
+
+	domain := parsed.Domain
 
 	var actualIntents []string
+
 	for _, intent := range domain.Intents {
 		for key := range intent {
 			actualIntents = append(actualIntents, key)
 		}
 	}
+
 	expectedIntents := []string{"affirm", "ask_builder", "enter_data", "out_of_scope"}
 	assert.ElementsMatch(t, actualIntents, expectedIntents)
+}
+
+func TestParsedDomainSlots(t *testing.T) {
+	parsed, err := parsedJSON("request_With_domain.json")
+	assert.Nil(t, err)
+
+	domain := parsed.Domain
 
 	expectedSlots := []Slot{
-		{"budget", "rasa.core.slots.UnfeaturizedSlot", nil, true},
-		{"current_api", "rasa.core.slots.CategoricalSlot", nil, true},
-		{"name", "rasa.core.slots.TextSlot", nil, true},
-		{"onboarding", "rasa.core.slots.BooleanSlot", nil, true}}
+		{Name: "budget", Type: "rasa.core.slots.UnfeaturizedSlot", AutoFill: true},
+		{Name: "current_api", Type: "rasa.core.slots.CategoricalSlot", AutoFill: true},
+		{Name: "name", Type: "rasa.core.slots.TextSlot", AutoFill: true},
+		{Name: "onboarding", Type: "rasa.core.slots.BooleanSlot", AutoFill: true}}
 	assert.ElementsMatch(t, domain.Slots, expectedSlots)
+}
+
+func TestParsedDomainResponses(t *testing.T) {
+	parsed, err := parsedJSON("request_With_domain.json")
+	assert.Nil(t, err)
+
+	domain := parsed.Domain
 
 	expectedResponses := map[string][]Response{
 		"utter_already_subscribed": {{Text: "spam folder 🗑"}},
 		"utter_ask_docs_help": {{"Did that help?", "",
-			[]responses.Button{{"👍", `/affirm`}, {"👎", `/deny`}}}},
+			[]responses.Button{{Title: "👍", PayLoad: `/affirm`}, {Title: "👎", PayLoad: `/deny`}}}},
 		"utter_continue_step2": {
 			{Text: "Let's continue", Channel: "socketio"},
-			{"Let's continue, please click the button below.", "", []responses.Button{{"Next step", `/get_started_step2`}}}},
+			{Text: "Let's continue, please click the button below.",
+				Buttons: []responses.Button{{Title: "Next step", PayLoad: `/get_started_step2`}}}},
 	}
 
-	for responseKey, responses := range expectedResponses {
-		assert.ElementsMatch(t, domain.Responses[responseKey], responses)
+	for responseKey, response := range expectedResponses {
+		assert.ElementsMatch(t, domain.Responses[responseKey], response)
 	}
 }
 
 func TestParsedSmallTracker(t *testing.T) {
-	path := filepath.Join("testdata", "../../test/request_with_small_tracker.json") // relative path
-	reader, err := os.Open(path)
-	parsed, err := Parsed(reader)
-
+	parsed, err := parsedJSON("request_with_small_tracker.json")
 	assert.Nil(t, err)
 
-	assert.Equal(t, "wochinge", parsed.Tracker.ConversationId,)
-	assert.Equal(t, false, parsed.Tracker.Paused, )
+	assert.Equal(t, "wochinge", parsed.Tracker.ConversationID)
+	assert.Equal(t, false, parsed.Tracker.Paused)
 	assert.Equal(t, "rasa", parsed.Tracker.LatestInputChannel)
 	assert.Equal(t, 1584966507.4803030491, parsed.Tracker.LatestEventTime)
-	assert.Equal(t, "", parsed.Tracker.FollowUpAction, )
-	assert.Equal(t, "action_listen", parsed.Tracker.LatestActionName,)
+	assert.Equal(t, "", parsed.Tracker.FollowUpAction)
+	assert.Equal(t, "action_listen", parsed.Tracker.LatestActionName)
+
 	expectedLatestMessage := events.ParseData{
 		Intent: events.IntentParseResult{Name: "ask_howold", Confidence: 0.7406903505}, Entities: []events.Entity{},
-		IntentRanking: []events.IntentParseResult{{"ask_howold", 0.7406903505}},}
+		IntentRanking: []events.IntentParseResult{{Name: "ask_howold", Confidence: 0.7406903505}}}
 	assert.Equal(t, expectedLatestMessage, parsed.Tracker.LatestMessage)
 
 	expectedSlots := map[string]interface{}{
 		"job_function": "nurse",
-		"use_case": true,
+		"use_case":     true,
 	}
 	assert.Equal(t, expectedSlots, parsed.Tracker.Slots)
-	expectedEvents := []events.Event{
-		&events.Action{Base: events.Base{Type: "action", Timestamp: 1584966507.4802880287}, Name: "action_session_start"},
-		&events.SessionStarted{Base: events.Base{Type: "session_started", Timestamp: 1584966507.4802930355}},
-		&events.Action{Base: events.Base{Type: "action", Timestamp: 1584966507.4803030491}, Name: "action_listen"},
-		&events.User{Base: events.Base{Type: "user",
-			Timestamp: 1585158505.1458339691,
-			Metadata:  map[string]interface{}{"rasa_x_flagged": false, "rasa_x_id": 4.0}},
-			Text: "hello", ParseData: events.ParseData{
-				Intent: events.IntentParseResult{Name: "greet", Confidence: 0.9908843637}, Entities: []events.Entity{},
-				IntentRanking: []events.IntentParseResult{{"greet", 0.9908843637},
-					{"mood_deny", 0.004441225}}, Text: "hello"}, MessageId: "c25928b830814f8180336745d9ad29f2", InputChannel: "rasa"},
-	}
-
-	assert.ElementsMatch(t, parsed.Tracker.Events, expectedEvents)
 }
 
 func TestParseTrackerEvents(t *testing.T) {
-	path := filepath.Join("testdata", "../../test/request_with_tracker_containing_all_events.json") // relative path
-	reader, err := os.Open(path)
-	parsed, err := Parsed(reader)
-
+	parsed, err := parsedJSON("request_with_tracker_containing_all_events.json")
 	assert.Nil(t, err)
 
 	expectedEvents := []events.Event{
-		&events.Action{Base: events.Base{Type: "action", Timestamp: 1584966507.4802880287}, Name: "action_session_start"},
+		&events.Action{Base: events.Base{Type: "action", Timestamp: 1584966507.4802880287},
+			Name: "action_session_start"},
 		&events.User{Base: events.Base{Type: "user",
 			Timestamp: 1585158505.1458339691,
 			Metadata:  map[string]interface{}{"rasa_x_flagged": false, "rasa_x_id": 4.0}},
 			Text: "hello", ParseData: events.ParseData{
 				Intent: events.IntentParseResult{Name: "greet", Confidence: 0.9908843637},
-				Entities: []events.Entity{{Start: 0, End: 13, Value: "Windows Linux", Name: "name", Confidence: 0.7906183672, Extractor: "ner_crf"}},
-				IntentRanking: []events.IntentParseResult{{"greet", 0.9908843637},
-					{"mood_deny", 0.004441225}}, Text: "hello"}, MessageId: "c25928b830814f8180336745d9ad29f2", InputChannel: "rasa"},
-		&events.Bot{Base: events.Base{Type: "bot", Timestamp: 1545048302.4110603333}, Text: "Peace", Data: responses.BotMessage{Elements: []interface{}{}, Buttons: []responses.Button{}, Attachment: nil}},
+				Entities: []events.Entity{
+					{Start: 0, End: 13, Value: "Windows Linux", Name: "name", Confidence: 0.7906, Extractor: "ner_crf"},
+					{Start: 0, End: 13, Value: 5.0, Name: "number", Confidence: 0.7906, Extractor: "ner_crf"},
+					{Start: 0, End: 13, Value: true, Name: "isHot", Confidence: 0.7906, Extractor: "ner_crf"}},
+				IntentRanking: []events.IntentParseResult{{Name: "greet", Confidence: 0.9908843637},
+					{Name: "mood_deny", Confidence: 0.01}}, Text: "hello"},
+			MessageID: "c25928b830814f8180336745d9ad29f2", InputChannel: "rasa"},
+		&events.Bot{Base: events.Base{Type: "bot", Timestamp: 1234}, Text: "Peace",
+			Data: responses.BotMessage{Elements: []interface{}{}, Buttons: []responses.Button{}, Attachment: nil}},
 		&events.SessionStarted{Base: events.Base{Type: "session_started", Timestamp: 1584966507.4802930355}},
 		&events.SlotSet{Base: events.Base{Type: "slot", Timestamp: 1560425053.3079407215}, Name: "name", Value: "test"},
-		&events.ConversationPaused{Base: events.Base{Type: "pause", Timestamp: 1560425075.5327758789}},
-		&events.ConversationResumed{Base: events.Base{Type: "resume", Timestamp: 1560425075.5327758789}},
+		&events.ConversationPaused{Base: events.Base{Type: "pause", Timestamp: 99.1}},
+		&events.ConversationResumed{Base: events.Base{Type: "resume", Timestamp: 99.1}},
 		&events.Form{Base: events.Base{Type: "form", Timestamp: 1556550828.3499741554}},
-		&events.FormValidation{Base: events.Base{Type: "form_validation", Timestamp: 1556550812.2503328323}, Validate: false},
-		&events.FollowUpAction{Base: events.Base{Type: "followup", Timestamp: 1560425075.5327758789}, Name: "next action"},
-		&events.StoryExported{Base: events.Base{Type: "export", Timestamp: 1560425075.5327758789}},
-		&events.ActionReverted{Base: events.Base{Type: "undo", Timestamp: 1560425075.5327758789}},
-		&events.UserUtteranceReverted{Base: events.Base{Type: "rewind", Timestamp: 1560425075.5327758789}},
+		&events.FormValidation{Base: events.Base{Type: "form_validation", Timestamp: 12345}, Validate: false},
+		&events.FollowUpAction{Base: events.Base{Type: "followup", Timestamp: 99.1}, Name: "next action"},
+		&events.StoryExported{Base: events.Base{Type: "export", Timestamp: 99.1}},
+		&events.ActionReverted{Base: events.Base{Type: "undo", Timestamp: 99.1}},
+		&events.UserUtteranceReverted{Base: events.Base{Type: "rewind", Timestamp: 99.1}},
 		&events.Restarted{Base: events.Base{Type: "restart", Timestamp: 1560424318.9264261723}},
 		&events.AllSlotsReset{Base: events.Base{Type: "reset_slots", Timestamp: 1560424318.9264261723}},
 		&events.ActionExecutionRejected{
@@ -163,16 +174,25 @@ func TestParseTrackerEvents(t *testing.T) {
 		},
 	}
 
+	for i, e := range expectedEvents {
+		assert.Equal(t, e, parsed.Tracker.Events[i])
+	}
+
 	assert.ElementsMatch(t, parsed.Tracker.Events, expectedEvents)
 }
 
 func TestParsedActiveForm(t *testing.T) {
-	path := filepath.Join("testdata", "../../test/request_with_active_form.json") // relative path
-	reader, err := os.Open(path)
-	parsed, err := Parsed(reader)
-
+	parsed, err := parsedJSON("request_with_active_form.json")
 	assert.Nil(t, err)
 
-	assert.Equal(t, parsed.Tracker.ActiveForm, ActiveForm{Name: "my-form", Validate:true, Rejected:false, TriggerMessage:events.ParseData{}})
+	assert.Equal(t, parsed.Tracker.ActiveForm, ActiveForm{Name: "my-form", Validate: true,
+		Rejected: false, TriggerMessage: events.ParseData{}})
 }
-// TODO Test active form field
+
+func parsedJSON(path string) (CustomActionRequest, error) {
+	const testDataDir = "../test/"
+	fullPath := filepath.Join(testDataDir, path)
+	reader, _ := os.Open(fullPath)
+
+	return Parsed(reader)
+}

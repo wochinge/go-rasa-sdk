@@ -13,6 +13,7 @@ func TestEventType(t *testing.T) {
 	for _, eventType := range types {
 		eventCreator, found := eventParser(Base{Type: eventType})
 		assert.True(t, found)
+
 		event := eventCreator()
 
 		// Nuke type to invalid one if it's correctly re-assigned based on struct type
@@ -27,7 +28,7 @@ func TestEventType(t *testing.T) {
 func TestParsedDataEntityFor(t *testing.T) {
 	name, expectedValue := "user name", "Maria"
 
-	parsed := ParseData{Entities:[]Entity{{Name: "other", Value:"doesnt matter"}, {Name: name, Value: expectedValue}}}
+	parsed := ParseData{Entities: []Entity{{Name: "other", Value: "doesnt matter"}, {Name: name, Value: expectedValue}}}
 
 	actualValue, found := parsed.EntityFor(name)
 	assert.True(t, found)
@@ -35,7 +36,7 @@ func TestParsedDataEntityFor(t *testing.T) {
 }
 
 func TestParsedDataEntityForNotExisting(t *testing.T) {
-	parsed := ParseData{Entities:[]Entity{{Name: "other", Value:"doesnt matter"}}}
+	parsed := ParseData{Entities: []Entity{{Name: "other", Value: "doesnt matter"}}}
 
 	_, found := parsed.EntityFor("not there")
 	assert.False(t, found)

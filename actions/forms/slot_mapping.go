@@ -1,14 +1,16 @@
 package forms
 
-import "github.com/wochinge/go-rasa-sdk/rasa"
+import (
+	"github.com/wochinge/go-rasa-sdk/rasa"
+)
 
 type SlotMapping struct {
-	Entity          string
-	Intents         []string
-	ExcludedIntents []string
-	FromText        bool
-	Value           interface{}
-	ApplyToFirstRunOnly   bool
+	ApplyToFirstRunOnly bool
+	FromText            bool
+	Entity              string
+	Intents             []string
+	ExcludedIntents     []string
+	Value               interface{}
 }
 
 func defaultSlotMapping(slotName string) []SlotMapping {
@@ -45,6 +47,10 @@ func (mapping SlotMapping) allows(intentName string) bool {
 		if excludedIntent == intentName {
 			return false
 		}
+	}
+
+	if mapping.Intents == nil {
+		return true
 	}
 
 	for _, allowedIntent := range mapping.Intents {

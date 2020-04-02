@@ -36,7 +36,23 @@
               "end": 13,
               "value": "Windows Linux",
               "entity": "name",
-              "confidence": 0.7906183672,
+              "confidence": 0.7906,
+              "extractor": "ner_crf"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "value": 5,
+              "entity": "number",
+              "confidence": 0.7906,
+              "extractor": "ner_crf"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "value": true,
+              "entity": "isHot",
+              "confidence": 0.7906,
               "extractor": "ner_crf"
             }
           ],
@@ -47,7 +63,7 @@
             },
             {
               "name": "mood_deny",
-              "confidence": 0.004441225
+              "confidence": 0.01
             }
           ],
           "text": "hello"
@@ -58,7 +74,7 @@
 
       {
         "event": "bot",
-        "timestamp": 1545048302.4110603333,
+        "timestamp": 1234,
         "text": "Peace",
         "data": {
           "elements": [],
@@ -81,12 +97,12 @@
 
       {
         "event": "pause",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {
         "event": "resume",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {
@@ -97,29 +113,29 @@
 
       {
         "event": "form_validation",
-        "timestamp": 1556550812.2503328323,
+        "timestamp": 12345,
         "validate": false
       },
 
       {
         "event": "followup",
         "name": "next action",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {
         "event": "export",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {
         "event": "undo",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {
         "event": "rewind",
-        "timestamp": 1560425075.5327758789
+        "timestamp": 99.1
       },
 
       {

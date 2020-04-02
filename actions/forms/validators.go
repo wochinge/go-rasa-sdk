@@ -7,14 +7,14 @@ import (
 
 type SlotValidator interface {
 	IsValid(value interface{}, domain *rasa.Domain, tracker *rasa.Tracker,
-		dispatcher responses.ResponseDispatcher) bool
+		dispatcher responses.ResponseDispatcher) (interface{}, bool)
 }
 
 type DefaultValidator struct{}
 
 func (v *DefaultValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
-	_ responses.ResponseDispatcher) bool {
-	return value != nil
+	_ responses.ResponseDispatcher) (interface{}, bool) {
+	return value, value != nil
 }
 
 type MultiValidator struct {
@@ -22,11 +22,12 @@ type MultiValidator struct {
 }
 
 func (v *MultiValidator) IsValid(value interface{}, domain *rasa.Domain, tracker *rasa.Tracker,
-	dispatcher responses.ResponseDispatcher) bool {
+	dispatcher responses.ResponseDispatcher) (interface{}, bool) {
 	for _, validator := range v.validators {
-		if ! validator.IsValid(value, domain, tracker, dispatcher) {
-			return false
+		if validated, valid := validator.IsValid(value, domain, tracker, dispatcher); valid {
+			return validated, true
 		}
 	}
-	return true
+
+	return nil, false
 }

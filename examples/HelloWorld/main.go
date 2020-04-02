@@ -29,5 +29,5 @@ func (action *HelloWorldAction) Name() string {
 }
 
 func main() {
-	server.Serve(5055, &HelloWorldAction{})
+	server.Serve(server.DefaultPort, &HelloWorldAction{})
 }

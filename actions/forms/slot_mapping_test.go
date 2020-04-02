@@ -7,55 +7,60 @@ import (
 	"testing"
 )
 
-func TestFillSlotFromEntity(t *testing.T) {
-	entityName, expectedValue := "entity FormName", "expectedValue"
+const (
+	testEntity      = "my entity"
+	testEntityValue = "value"
+	intentName      = "greet"
+)
 
-	lastMessage := events.ParseData{Entities: []events.Entity{{Name: entityName, Value: expectedValue}}}
+func TestFillSlotFromEntity(t *testing.T) {
+	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	value, found := SlotMapping{Entity: entityName}.apply(nil, &tracker)
+	value, found := SlotMapping{Entity: testEntity}.apply(nil, &tracker)
 	assert.True(t, found)
-	assert.Equal(t, expectedValue, value)
+	assert.Equal(t, testEntityValue, value)
 }
 
 func TestFillSlotFromEntityWithIntentSpecified(t *testing.T) {
-	entityName, expectedValue := "entity FormName", "expectedValue"
-	intentName := "greet"
-
-	lastMessage := events.ParseData{Entities: []events.Entity{{Name: entityName, Value: expectedValue}},
+	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}},
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	value, found := SlotMapping{Entity: entityName, Intents: []string{"bye", intentName}}.apply(nil, &tracker)
+	value, found := SlotMapping{Entity: testEntity, Intents: []string{"bye", intentName}}.apply(nil, &tracker)
 	assert.True(t, found)
-	assert.Equal(t, expectedValue, value)
+	assert.Equal(t, testEntityValue, value)
 }
 
 func TestFillSlotFromEntityWithIntentNotSpecified(t *testing.T) {
-	entityName, expectedValue := "entity FormName", "expectedValue"
-
-	lastMessage := events.ParseData{Entities: []events.Entity{{Name: entityName, Value: expectedValue}},
-		Intent: events.IntentParseResult{Name: "greet"}}
+	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}},
+		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	_, found := SlotMapping{Entity: entityName, Intents: []string{"bye"}}.apply(nil, &tracker)
+	_, found := SlotMapping{Entity: testEntity, Intents: []string{"bye"}}.apply(nil, &tracker)
 	assert.False(t, found)
 }
 
 func TestFillSlotFromEntityWithIntentExcluded(t *testing.T) {
-	entityName, expectedValue := "entity FormName", "expectedValue"
-	intentName := "greet"
-
-	lastMessage := events.ParseData{Entities: []events.Entity{{Name: entityName, Value: expectedValue}},
+	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}},
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	_, found := SlotMapping{Entity: entityName, ExcludedIntents: []string{intentName}}.apply(nil, &tracker)
+	_, found := SlotMapping{Entity: testEntity, ExcludedIntents: []string{intentName}}.apply(nil, &tracker)
 	assert.False(t, found)
 }
 
+func TestFillSlotFromEntityWithIntentExcludedButAllowedWasGiven(t *testing.T) {
+	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}},
+		Intent: events.IntentParseResult{Name: intentName}}
+	tracker := rasa.Tracker{LatestMessage: lastMessage}
+
+	_, found := SlotMapping{Entity: testEntity, ExcludedIntents: []string{"someother"}}.apply(nil, &tracker)
+	assert.True(t, found)
+}
+
 func TestFillSlotFromText(t *testing.T) {
-	intentName, text := "greet", "hellooooooo"
+	text := "TestFillSlotFromText"
 
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: "dasdas", Value: "Dasds"}},
 		Intent: events.IntentParseResult{Name: intentName}, Text: text}
@@ -67,7 +72,6 @@ func TestFillSlotFromText(t *testing.T) {
 }
 
 func TestFillSlotFromValue(t *testing.T) {
-	intentName := "greet"
 	expectedValue := "free style"
 
 	lastMessage := events.ParseData{Intent: events.IntentParseResult{Name: intentName}}
@@ -79,8 +83,6 @@ func TestFillSlotFromValue(t *testing.T) {
 }
 
 func TestMappingDoesNotApply(t *testing.T) {
-	intentName := "greet"
-
 	lastMessage := events.ParseData{Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
@@ -89,26 +91,25 @@ func TestMappingDoesNotApply(t *testing.T) {
 }
 
 func TestMappingOnlyFirstRun(t *testing.T) {
-	intentName, text := "greet", "hellooooooo"
+	text := "TestMappingOnlyFirstRun"
 
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: "dasdas", Value: "Dasds"}},
 		Intent: events.IntentParseResult{Name: intentName}, Text: text}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	value, found := SlotMapping{FromText: true, ApplyToFirstRunOnly: true}.apply(&Form{FormName:"form"}, &tracker)
+	value, found := SlotMapping{FromText: true, ApplyToFirstRunOnly: true}.apply(&Form{FormName: "form"}, &tracker)
 	assert.True(t, found)
 	assert.Equal(t, text, value)
 }
 
 func TestMappingOnlyFirstRunIfNotFirstRun(t *testing.T) {
-	intentName, text := "greet", "hellooooooo"
+	text := "TestMappingOnlyFirstRunIfNotFirstRun"
 	formName := "my form"
 
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: "dasdas", Value: "Dasds"}},
 		Intent: events.IntentParseResult{Name: intentName}, Text: text}
-	tracker := rasa.Tracker{LatestMessage: lastMessage, ActiveForm:rasa.ActiveForm{Name:formName}}
+	tracker := rasa.Tracker{LatestMessage: lastMessage, ActiveForm: rasa.ActiveForm{Name: formName}}
 
-
-	_, found := SlotMapping{FromText: true, ApplyToFirstRunOnly: true}.apply(&Form{FormName:formName}, &tracker)
+	_, found := SlotMapping{FromText: true, ApplyToFirstRunOnly: true}.apply(&Form{FormName: formName}, &tracker)
 	assert.False(t, found)
 }

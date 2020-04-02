@@ -9,43 +9,45 @@ import (
 	"testing"
 )
 
-type ExactMatchValidator struct{
+const testFormName = "test-form"
+
+type ExactMatchValidator struct {
 	toMatch string
 }
 
 func (v *ExactMatchValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
-	_ responses.ResponseDispatcher) bool {
-	return value == v.toMatch
+	_ responses.ResponseDispatcher) (interface{}, bool) {
+	return value, value == v.toMatch
 }
 
 func TestActivateFormIfActive(t *testing.T) {
 	nextSlot, value := "next slot", "bla"
 
-	formName := "test-form"
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: formName}, Slots: map[string]interface{}{requestedSlot: nextSlot}}
-	tracker.LatestMessage.Entities = []events.Entity{{Name:nextSlot, Value:value}}
+	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
+		Slots: map[string]interface{}{requestedSlot: nextSlot}}
+	tracker.LatestMessage.Entities = []events.Entity{{Name: nextSlot, Value: value}}
 
-	testForm := Form{FormName: formName, RequiredSlots: []string{nextSlot}}
+	testForm := Form{FormName: testFormName, RequiredSlots: []string{nextSlot}}
 
 	newEvents := testForm.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
 
 	expectedEvents := []events.Event{
 		&events.SlotSet{Name: nextSlot, Value: value},
 		&events.Form{},
-		&events.SlotSet{Name:requestedSlot, Value:nil}}
+		&events.SlotSet{Name: requestedSlot, Value: nil}}
 
 	assert.ElementsMatch(t, expectedEvents, newEvents)
 }
 
 func TestActivateFormIfNotActive(t *testing.T) {
-	formName := "test-form"
-	tracker := rasa.Tracker{}
+	nextSlot, otherSlot := "x", "y"
 
-	nextSlot := "x"
-	testForm := Form{FormName: formName, RequiredSlots: []string{nextSlot}}
+	tracker := rasa.Tracker{Slots: map[string]interface{}{nextSlot: nil, otherSlot: nil}}
+
+	testForm := Form{FormName: testFormName, RequiredSlots: []string{nextSlot, otherSlot}}
 
 	newEvents := testForm.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
-	expected := []events.Event{&events.Form{Name: formName}, &events.SlotSet{Name: requestedSlot, Value: nextSlot}}
+	expected := []events.Event{&events.Form{Name: testFormName}, &events.SlotSet{Name: requestedSlot, Value: nextSlot}}
 
 	assert.ElementsMatch(t, expected, newEvents)
 }
@@ -58,10 +60,11 @@ func TestActivateValidateExistingSlots(t *testing.T) {
 	requiredSlots := []string{slot1, slot2}
 	currentlyFilledSLots := map[string]interface{}{slot1: toMatch, slot2: "tada"}
 
-	tracker := &rasa.Tracker{Slots: currentlyFilledSLots, ActiveForm:rasa.ActiveForm{Validate:true}}
+	tracker := &rasa.Tracker{Slots: currentlyFilledSLots, ActiveForm: rasa.ActiveForm{Validate: true},
+		LatestActionName: "action_listen"}
 
-	validator := &ExactMatchValidator{toMatch:toMatch}
-	testForm := Form{FormName: formName, RequiredSlots: requiredSlots, Validators:map[string][]SlotValidator{
+	validator := &ExactMatchValidator{toMatch: toMatch}
+	testForm := Form{FormName: formName, RequiredSlots: requiredSlots, Validators: map[string][]SlotValidator{
 		slot1: {validator}, slot2: {validator}}}
 
 	newEvents := testForm.Run(tracker, &rasa.Domain{}, responses.NewDispatcher())
@@ -75,18 +78,17 @@ func TestActivateValidateExistingSlots(t *testing.T) {
 }
 
 func TestActivateFormWithAlreadyFilledSlots(t *testing.T) {
-	formName := "test-form"
 	slot, value := "there-and-valid", "Sara"
 	requiredSlots := []string{slot}
 	currentlyFilledSLots := map[string]interface{}{slot: value, "other": "not part of the form"}
 
 	tracker := rasa.Tracker{Slots: currentlyFilledSLots}
-	testForm := Form{FormName: formName, RequiredSlots: requiredSlots}
+	testForm := Form{FormName: testFormName, RequiredSlots: requiredSlots}
 
 	newEvents := testForm.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
 	expected := []events.Event{
-		&events.Form{Name: formName},
-		&events.SlotSet{Name:slot, Value:value},
+		&events.Form{Name: testFormName},
+		&events.SlotSet{Name: slot, Value: value},
 		&events.Form{Name: ""},
 		&events.SlotSet{Name: requestedSlot, Value: nil}}
 
@@ -94,41 +96,42 @@ func TestActivateFormWithAlreadyFilledSlots(t *testing.T) {
 }
 
 func TestFillSlots(t *testing.T) {
-	formName := "test-form"
 	slotName := "this slot should be filled"
 
 	// Prepare tracker
 	name, value := "my entity", "test"
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: name, Value: value}}}
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: formName},
+	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
 		LatestMessage: lastMessage,
 		Slots:         map[string]interface{}{requestedSlot: slotName}}
 
 	// Prepare form
 	requiredSlots := []string{slotName}
 	slotMapping := SlotMapping{Entity: name}
-	testForm := Form{FormName: formName, RequiredSlots: requiredSlots, SlotMappings: map[string][]SlotMapping{slotName: {slotMapping}}}
+	testForm := Form{FormName: testFormName, RequiredSlots: requiredSlots,
+		SlotMappings: map[string][]SlotMapping{slotName: {slotMapping}}}
 
 	newEvents := testForm.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
 
-	expected := []events.Event{&events.SlotSet{Name: slotName, Value: value}, &events.Form{Name: ""}, &events.SlotSet{Name: requestedSlot, Value: nil}}
+	expected := []events.Event{
+		&events.SlotSet{Name: slotName, Value: value}, &events.Form{Name: ""},
+		&events.SlotSet{Name: requestedSlot, Value: nil}}
 	assert.ElementsMatch(t, expected, newEvents)
 }
 
 func TestFillSlotWithoutMapping(t *testing.T) {
-	formName := "test-form"
 	slotName := "this slot should be filled"
 
 	// Prepare tracker
 	entityValue := "test"
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: slotName, Value: entityValue}}}
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: formName},
+	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
 		LatestMessage: lastMessage,
 		Slots:         map[string]interface{}{requestedSlot: slotName}}
 
 	// Prepare form
 	requiredSlots := []string{slotName}
-	testForm := Form{FormName: formName, RequiredSlots: requiredSlots}
+	testForm := Form{FormName: testFormName, RequiredSlots: requiredSlots}
 
 	newEvents := testForm.slotCandidates(&tracker)
 
@@ -144,7 +147,8 @@ func TestFillOtherSlotsIfEntitiesGiven(t *testing.T) {
 		Intent: events.IntentParseResult{Name: "some intent"}, Text: expectedText}
 	tracker := rasa.Tracker{LatestMessage: lastMessage, Slots: map[string]interface{}{requestedSlot: requested}}
 
-	mappings := map[string][]SlotMapping{requested: {{FromText: true}}, otherSlot: {{Entity: otherSlot, Value: expectedValue}}}
+	mappings := map[string][]SlotMapping{requested: {{FromText: true}},
+		otherSlot: {{Entity: otherSlot, Value: expectedValue}}}
 	testForm := Form{FormName: "bla", RequiredSlots: []string{otherSlot, requested}, SlotMappings: mappings}
 
 	newEvents := testForm.slotCandidates(&tracker)
@@ -155,7 +159,7 @@ func TestFillOtherSlotsIfEntitiesGiven(t *testing.T) {
 }
 
 func TestDefaultValidation(t *testing.T) {
-	invalidSlot := "invalid"
+	invalidSlot := "invalid!!!!!!"
 	candidates := []events.SlotSet{{Name: invalidSlot, Value: nil}, {Name: "valid", Value: "so valid"}}
 
 	form := Form{}
@@ -165,11 +169,12 @@ func TestDefaultValidation(t *testing.T) {
 }
 
 func TestValidation(t *testing.T) {
-	validSlot, invalidSlot := "valid", "invalid"
+	validSlot, invalidSlot := "valid", "also invalid"
 	toMatch := "exact match!!"
 	candidates := []events.SlotSet{{Name: invalidSlot, Value: nil}, {Name: validSlot, Value: toMatch}}
 
-	form := Form{Validators: map[string][]SlotValidator{invalidSlot: {&ExactMatchValidator{}}, validSlot: {&ExactMatchValidator{toMatch:toMatch}}}}
+	form := Form{Validators: map[string][]SlotValidator{invalidSlot: {&ExactMatchValidator{}},
+		validSlot: {&ExactMatchValidator{toMatch: toMatch}}}}
 	validSlots := form.validatedSlots(candidates, nil, rasa.EmptyTracker(), nil)
 	expected := []events.Event{&events.SlotSet{Name: invalidSlot}, &candidates[1]}
 	assert.ElementsMatch(t, expected, validSlots)
@@ -179,9 +184,10 @@ func TestValidationDisabled(t *testing.T) {
 	validSlot, validValue, invalidSlot, invalidValue := "valid", "valid value", "invalid", "invalid value"
 	toMatch := validValue
 
-	tracker := &rasa.Tracker{ActiveForm:rasa.ActiveForm{Validate:false}, Slots:map[string]interface{}{}}
+	tracker := &rasa.Tracker{ActiveForm: rasa.ActiveForm{Validate: false}, Slots: map[string]interface{}{}}
 
-	form := Form{Validators: map[string][]SlotValidator{invalidSlot: {&ExactMatchValidator{}}, validSlot: {&ExactMatchValidator{toMatch:toMatch}}}}
+	form := Form{Validators: map[string][]SlotValidator{invalidSlot: {&ExactMatchValidator{}},
+		validSlot: {&ExactMatchValidator{toMatch: toMatch}}}}
 
 	candidates := []events.SlotSet{{Name: invalidSlot, Value: invalidValue}, {Name: validSlot, Value: validValue}}
 	validSlots := form.validatedSlots(candidates, nil, tracker, nil)
@@ -191,15 +197,16 @@ func TestValidationDisabled(t *testing.T) {
 
 func TestSubmit(t *testing.T) {
 	submitEvents := []events.Event{&events.Restarted{}, &events.AllSlotsReset{}}
-	onSubmit := func(tracker *rasa.Tracker, domain *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
+	onSubmit := func(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 		return submitEvents
 	}
 
-	requiredSlot, value := "test", "bla"
-	form := Form{FormName: "test", OnSubmit: onSubmit, RequiredSlots: []string{requiredSlot}}
+	requiredSlot, value := "age", "bla"
+	form := Form{FormName: testFormName, OnSubmit: onSubmit, RequiredSlots: []string{requiredSlot}}
 
-	tracker := &rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: form.FormName}, Slots: map[string]interface{}{requestedSlot: requiredSlot}}
-	tracker.LatestMessage.Entities = []events.Entity{{Name:requiredSlot, Value:value}}
+	tracker := &rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: form.FormName},
+		Slots: map[string]interface{}{requestedSlot: requiredSlot}}
+	tracker.LatestMessage.Entities = []events.Entity{{Name: requiredSlot, Value: value}}
 
 	newEvents := form.Run(tracker, nil, nil)
 
@@ -221,15 +228,17 @@ func TestFormExecutionRejected(t *testing.T) {
 }
 
 func TestRequestNextSlot(t *testing.T) {
-	formName, requiredSlot := "my-form", "my slot"
+	requiredSlot := "my slot"
 	dispatcher := responses.NewDispatcher()
-	form := Form{FormName: formName, RequiredSlots:[]string{requiredSlot}}
+	form := Form{FormName: testFormName, RequiredSlots: []string{requiredSlot}}
 
-	newEvents := form.Run(rasa.EmptyTracker(), nil , dispatcher)
+	newEvents := form.Run(rasa.EmptyTracker(), nil, dispatcher)
 
-	expected := []events.Event{&events.Form{Name: formName}, &events.SlotSet{Name: requestedSlot, Value: requiredSlot}}
+	expected := []events.Event{
+		&events.Form{Name: testFormName},
+		&events.SlotSet{Name: requestedSlot, Value: requiredSlot}}
 	assert.ElementsMatch(t, expected, newEvents)
 
-	expectedResponses := []responses.BotMessage{{Template:fmt.Sprintf("utter_ask_%s", requiredSlot)}}
+	expectedResponses := []responses.BotMessage{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }

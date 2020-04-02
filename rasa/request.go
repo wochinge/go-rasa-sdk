@@ -12,7 +12,7 @@ func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 
 	decoder := json.NewDecoder(requestBody)
 
-	if err:= decoder.Decode(&parsedRequest); err != nil {
+	if err := decoder.Decode(&parsedRequest); err != nil {
 		return parsedRequest, err
 	}
 
@@ -34,11 +34,8 @@ func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 	return parsedRequest, err
 }
 
-
 type CustomActionRequest struct {
 	ActionToRun string  `json:"next_action"`
 	Tracker     Tracker `json:"tracker"`
 	Domain      Domain  `json:"domain"`
 }
-
-// https://mholt.github.io/json-to-go/

@@ -26,15 +26,17 @@ func TestHealth(t *testing.T) {
 	assert.Equal(t, `{"status":"ok"}`, response.Body.String())
 }
 
-type TestAction struct {}
+type TestAction struct{}
+
 func (action *TestAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 	return []events.Event{&events.Restarted{}}
 }
-func (action *TestAction) Name() string {return "test-action"}
+func (action *TestAction) Name() string { return "test-action" }
 
-func TestRunAction(t *testing.T)  {
+func TestRunAction(t *testing.T) {
 	body := []byte(`{"next_action": "test-action"}`)
 	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +55,7 @@ func TestRunAction(t *testing.T)  {
 func TestRunActionNotFound(t *testing.T) {
 	body := []byte(`{"next_action": "test-action"}`)
 	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,6 +71,7 @@ func TestRunActionNotFound(t *testing.T) {
 func TestRunActionInvalidPayload(t *testing.T) {
 	body := []byte(`{"}`)
 	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,14 +85,16 @@ func TestRunActionInvalidPayload(t *testing.T) {
 }
 
 type RejectingAction struct{}
+
 func (action *RejectingAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 	return []events.Event{&events.ActionExecutionRejected{}}
 }
-func (action *RejectingAction) Name() string {return "test-reject"}
+func (action *RejectingAction) Name() string { return "test-reject" }
 
-func TestActionRejectsExecution(t *testing.T)  {
+func TestActionRejectsExecution(t *testing.T) {
 	body := []byte(`{"next_action": "test-reject""}`)
 	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
+
 	if err != nil {
 		t.Fatal(err)
 	}

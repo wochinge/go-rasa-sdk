@@ -6,7 +6,7 @@ import (
 )
 
 type Tracker struct {
-	ConversationId     string                 `json:"sender_id"`
+	ConversationID     string                 `json:"sender_id"`
 	Slots              map[string]interface{} `json:"slots"`
 	LatestMessage      events.ParseData       `json:"latest_message"`
 	LatestEventTime    float64                `json:"latest_event_time"`
@@ -20,21 +20,22 @@ type Tracker struct {
 }
 
 func (tracker *Tracker) NoFormValidation() bool {
-	return !tracker.ActiveForm.Validate || tracker.LatestActionName == "action_listen"
+	return !tracker.ActiveForm.Validate || tracker.LatestActionName != "action_listen"
 }
 
 func EmptyTracker() *Tracker {
-	tracker := &Tracker{ActiveForm: ActiveForm{Validate:true}}
+	tracker := &Tracker{ActiveForm: ActiveForm{Validate: true}}
+
 	return tracker.Init()
 }
 
-func (tracker *Tracker) Init() *Tracker{
+func (tracker *Tracker) Init() *Tracker {
 	if tracker.Slots == nil {
 		tracker.Slots = map[string]interface{}{}
 	}
+
 	return tracker
 }
-
 
 type ActiveForm struct {
 	Name           string           `json:"name"`

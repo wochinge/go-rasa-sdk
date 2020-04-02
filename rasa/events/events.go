@@ -32,6 +32,7 @@ const (
 
 func Parsed(rawEvents []json.RawMessage) ([]Event, error) {
 	var events []Event
+
 	for _, rawEvent := range rawEvents {
 		var minimalEvent Base
 
@@ -39,18 +40,27 @@ func Parsed(rawEvents []json.RawMessage) ([]Event, error) {
 			return []Event{}, err
 		}
 
-		eventCreator, ok := eventParser(minimalEvent)
-
-		if ok {
-			event := eventCreator()
-			if err := json.Unmarshal(rawEvent, &event); err != nil {
-				return []Event{}, err
-			}
+		if event := parseBasedOnyTypeKey(minimalEvent, rawEvent); event != nil {
 			events = append(events, event)
 		}
 	}
 
 	return events, nil
+}
+
+func parseBasedOnyTypeKey(base Base, raw json.RawMessage) Event {
+	eventCreator, ok := eventParser(base)
+
+	if !ok {
+		return nil
+	}
+
+	event := eventCreator()
+	if err := json.Unmarshal(raw, &event); err != nil {
+		return nil
+	}
+
+	return event
 }
 
 func eventParser(base Base) (func() Event, bool) {
@@ -78,13 +88,15 @@ func eventParser(base Base) (func() Event, bool) {
 	}
 
 	eventCreator, found := eventParsers[base.Type]
+
 	return eventCreator, found
 }
 
-func WithTypeKeys(events ...Event)[]Event {
+func WithTypeKeys(events ...Event) []Event {
 	for _, event := range events {
 		event.SetType(event.EventType())
 	}
+
 	return events
 }
 
@@ -94,6 +106,7 @@ func HasRejection(events []Event) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -107,8 +120,9 @@ type Base struct {
 	Timestamp float64                `json:"timestamp,omitempty"`
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 }
-func (_ *Base) EventType() Type {return "unknown"}
-func (base *Base) SetType(eventType Type) {base.Type = eventType}
+
+func (*Base) EventType() Type             { return "unknown" }
+func (base *Base) SetType(eventType Type) { base.Type = eventType }
 
 type Action struct {
 	Base
@@ -116,38 +130,39 @@ type Action struct {
 	Confidence float64 `json:"confidence"`
 	Name       string  `json:"name"`
 }
-func (_ *Action) EventType() Type {return action}
+
+func (*Action) EventType() Type { return action }
 
 type SessionStarted struct {
 	Base
 }
-func (_ *SessionStarted) EventType() Type {return sessionStarted}
 
+func (*SessionStarted) EventType() Type { return sessionStarted }
 
 type User struct {
 	Base
 	Text         string    `json:"text"`
 	InputChannel string    `json:"input_channel"`
-	MessageId    string    `json:"message_id"`
+	MessageID    string    `json:"message_id"`
 	ParseData    ParseData `json:"parse_data"`
 }
-func (_ *User) EventType() Type {return user}
 
+func (*User) EventType() Type { return user }
 
 type ParseData struct {
 	Intent        IntentParseResult   `json:"intent"`
-	Entities      []Entity      `json:"entities"`
+	Entities      []Entity            `json:"entities"`
 	IntentRanking []IntentParseResult `json:"intent_ranking"`
 	Text          string              `json:"text"`
 }
 
-
-func (data ParseData) EntityFor(name string) (string, bool) {
+func (data ParseData) EntityFor(name string) (interface{}, bool) {
 	for _, entity := range data.Entities {
 		if entity.Name == name {
 			return entity.Value, true
 		}
 	}
+
 	return "", false
 }
 
@@ -157,12 +172,12 @@ type IntentParseResult struct {
 }
 
 type Entity struct {
-	Start int `json:"start"`
-	End int `json:"end"`
-	Value string `json:"value"`
-	Name string `json:"entity"`
-	Confidence float64 `json:"confidence"`
-	Extractor string `json:"extractor"`
+	Start      int         `json:"start"`
+	End        int         `json:"end"`
+	Value      interface{} `json:"value"`
+	Name       string      `json:"entity"`
+	Confidence float64     `json:"confidence"`
+	Extractor  string      `json:"extractor"`
 }
 
 type Bot struct {
@@ -170,71 +185,82 @@ type Bot struct {
 	Text string               `json:"text"`
 	Data responses.BotMessage `json:"data"`
 }
-func (_ *Bot) EventType() Type {return bot}
+
+func (*Bot) EventType() Type { return bot }
 
 type UserUtteranceReverted struct {
 	Base
 }
-func (_ *UserUtteranceReverted) EventType() Type {return userUtteranceReverted}
+
+func (*UserUtteranceReverted) EventType() Type { return userUtteranceReverted }
 
 type ActionReverted struct {
 	Base
 }
-func (_ *ActionReverted) EventType() Type {return actionReverted}
+
+func (*ActionReverted) EventType() Type { return actionReverted }
 
 type Restarted struct {
 	Base
 }
-func (_ *Restarted) EventType() Type {return restarted}
+
+func (*Restarted) EventType() Type { return restarted }
 
 type StoryExported struct {
 	Base
 }
-func (_ *StoryExported) EventType() Type {return storyExported}
+
+func (*StoryExported) EventType() Type { return storyExported }
 
 type FollowUpAction struct {
 	Base
 	Name string `json:"name"`
 }
-func (_ *FollowUpAction) EventType() Type {return followUpAction}
+
+func (*FollowUpAction) EventType() Type { return followUpAction }
 
 type ConversationPaused struct {
 	Base
 }
-func (_ *ConversationPaused) EventType() Type {return conversationPaused}
 
+func (*ConversationPaused) EventType() Type { return conversationPaused }
 
 type ConversationResumed struct {
 	Base
 }
-func (_ *ConversationResumed) EventType() Type {return conversationResumed}
+
+func (*ConversationResumed) EventType() Type { return conversationResumed }
 
 type SlotSet struct {
 	Base
 	Name  string      `json:"name"`
 	Value interface{} `json:"value"`
 }
-func (_ *SlotSet) EventType() Type {return slotSet}
+
+func (*SlotSet) EventType() Type { return slotSet }
 
 type AllSlotsReset struct {
 	Base
 }
-func (_ *AllSlotsReset) EventType() Type {return allSlotsReset}
+
+func (*AllSlotsReset) EventType() Type { return allSlotsReset }
 
 type Form struct {
 	Base
 	Name string `json:"name,omitempty"`
 }
-func (_ *Form) EventType() Type {return form}
+
+func (*Form) EventType() Type { return form }
 
 type FormValidation struct {
 	Base
 	Validate bool `json:"validate"`
 }
-func (_ *FormValidation) EventType() Type {return formValidation}
 
+func (*FormValidation) EventType() Type { return formValidation }
 
 type ActionExecutionRejected struct {
 	Action
 }
-func (_ *ActionExecutionRejected) EventType() Type {return actionExecutionRejected}
+
+func (*ActionExecutionRejected) EventType() Type { return actionExecutionRejected }

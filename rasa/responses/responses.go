@@ -28,8 +28,8 @@ type Button struct {
 }
 
 type BotMessage struct {
-	Text string `json:"text"`
-	Template string `json:"template,omitempty"`
+	Text         string        `json:"text"`
+	Template     string        `json:"template,omitempty"`
 	Elements     []interface{} `json:"elements,omitempty"`
 	QuickReplies []interface{} `json:"quick_replies,omitempty"`
 	Buttons      []Button      `json:"buttons,omitempty"`
@@ -37,4 +37,3 @@ type BotMessage struct {
 	Image        string        `json:"image,omitempty"`
 	Custom       interface{}   `json:"custom,omitempty"`
 }
-

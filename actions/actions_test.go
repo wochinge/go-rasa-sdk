@@ -10,14 +10,14 @@ import (
 )
 
 type SimpleTestAction struct{}
+
 func (action *SimpleTestAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 	return []events.Event{&events.SlotSet{Name: "test-slot", Value: "test-value"}}
 }
-func (action *SimpleTestAction) Name() string {return "test-action"}
+func (action *SimpleTestAction) Name() string { return "test-action" }
 
 func TestActionReturningEvents(t *testing.T) {
-	var action Action
-	action = &SimpleTestAction{}
+	action := &SimpleTestAction{}
 
 	newEvents := action.Run(&rasa.Tracker{}, &rasa.Domain{}, responses.NewDispatcher())
 
@@ -26,16 +26,18 @@ func TestActionReturningEvents(t *testing.T) {
 }
 
 type ActionDispatchingResponses struct{}
-func (action *ActionDispatchingResponses) Run(_ *rasa.Tracker, _ *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
-	message := responses.BotMessage{Text:"Hello World"}
+
+func (action *ActionDispatchingResponses) Run(_ *rasa.Tracker, _ *rasa.Domain,
+	dispatcher responses.ResponseDispatcher) []events.Event {
+	message := responses.BotMessage{Text: "Hello World"}
 	dispatcher.Utter(message)
+
 	return []events.Event{}
 }
-func (action *ActionDispatchingResponses) Name() string {return "action-dispatching-responses"}
+func (action *ActionDispatchingResponses) Name() string { return "action-dispatching-responses" }
 
 func TestActionDispatchingResponses(t *testing.T) {
-	var action Action
-	action = &ActionDispatchingResponses{}
+	action := &ActionDispatchingResponses{}
 
 	dispatcher := responses.NewDispatcher()
 	action.Run(&rasa.Tracker{}, &rasa.Domain{}, dispatcher)
@@ -46,46 +48,47 @@ func TestActionDispatchingResponses(t *testing.T) {
 
 func TestActionResponseEmpty(t *testing.T) {
 	response := ActionResponse([]events.Event{}, responses.NewDispatcher())
-	actualAsJson, err := json.Marshal(response)
+	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
 
-
 	expectedResponse := `{"events":[],"responses":[]}`
-	assert.Equal(t, expectedResponse, string(actualAsJson))
+	assert.Equal(t, expectedResponse, string(actualAsJSON))
 }
 
 func TestActionResponseWithMultipleResponses(t *testing.T) {
 	dispatcher := responses.NewDispatcher()
-	dispatcher.Utter(responses.BotMessage{Text:"hi"})
+	dispatcher.Utter(responses.BotMessage{Text: "hi"})
 	dispatcher.Utter(responses.BotMessage{Template: "utter_ask"})
 
 	response := ActionResponse([]events.Event{}, dispatcher)
-	actualAsJson, err := json.Marshal(response)
+	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
 
 	expectedResponse := `{"events":[],"responses":[{"text":"hi"},{"text":"","template":"utter_ask"}]}`
-	assert.Equal(t, expectedResponse, string(actualAsJson))
+	assert.Equal(t, expectedResponse, string(actualAsJSON))
 }
 
 func TestActionResponseWithEvents(t *testing.T) {
-	newEvents := []events.Event{&events.Restarted{}, &events.SlotSet{Name:"my cool slot", Value: "best value"}}
+	newEvents := []events.Event{&events.Restarted{}, &events.SlotSet{Name: "my cool slot", Value: "best value"}}
 
-	response  := ActionResponse(newEvents,responses. NewDispatcher())
-	actualAsJson, err := json.Marshal(response)
+	response := ActionResponse(newEvents, responses.NewDispatcher())
+	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
 
-	expectedResponse := `{"events":[{"event":"restart"},{"event":"slot","name":"my cool slot","value":"best value"}],"responses":[]}`
-	assert.Equal(t, expectedResponse, string(actualAsJson))
+	expectedResponse := `{"events":[{"event":"restart"},` +
+		`{"event":"slot","name":"my cool slot","value":"best value"}],"responses":[]}`
+	assert.Equal(t, expectedResponse, string(actualAsJSON))
 }
 
 type RejectingAction struct{}
+
 func (action *RejectingAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 	return []events.Event{&events.ActionExecutionRejected{}}
 }
-func (action *RejectingAction) Name() string {return "test-reject"}
+func (action *RejectingAction) Name() string { return "test-reject" }
 
 func TestActionRejectingExecution(t *testing.T) {
 	actionRequest := rasa.CustomActionRequest{ActionToRun: "test-reject"}
