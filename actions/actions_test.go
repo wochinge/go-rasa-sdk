@@ -80,3 +80,17 @@ func TestActionResponseWithEvents(t *testing.T) {
 	expectedResponse := `{"events":[{"event":"restart"},{"event":"slot","name":"my cool slot","value":"best value"}],"responses":[]}`
 	assert.Equal(t, expectedResponse, string(actualAsJson))
 }
+
+type RejectingAction struct{}
+func (action *RejectingAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
+	return []events.Event{&events.ActionExecutionRejected{}}
+}
+func (action *RejectingAction) Name() string {return "test-reject"}
+
+func TestActionRejectingExecution(t *testing.T) {
+	actionRequest := rasa.CustomActionRequest{ActionToRun: "test-reject"}
+
+	_, err := ExecuteAction(actionRequest, []Action{&RejectingAction{}})
+
+	assert.IsType(t, &ExecutionRejectedError{}, err)
+}

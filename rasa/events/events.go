@@ -88,6 +88,15 @@ func WithTypeKeys(events ...Event)[]Event {
 	return events
 }
 
+func HasRejection(events []Event) bool {
+	for _, event := range events {
+		if _, ok := event.(*ActionExecutionRejected); ok {
+			return true
+		}
+	}
+	return false
+}
+
 type Event interface {
 	EventType() Type
 	SetType(Type)

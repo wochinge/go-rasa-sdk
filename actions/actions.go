@@ -12,16 +12,25 @@ type Action interface {
 	Name() string
 }
 
+type NotFoundError struct {name string}
+func (e *NotFoundError) Error() string { return fmt.Sprintf("action '%s' was not found.", e.name)}
+
+type ExecutionRejectedError struct {name string}
+func (e *ExecutionRejectedError) Error() string { return fmt.Sprintf("action '%s' rejected execution.", e.name)}
+
 func ExecuteAction(actionRequest rasa.CustomActionRequest, availableActions []Action) (map[string]interface{}, error) {
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 
 	if actionToRun == nil {
-		return nil, fmt.Errorf("action with this name not found")
+		return nil, &NotFoundError{name:actionRequest.ActionToRun}
 	}
 
 	dispatcher := responses.NewDispatcher()
 	newEvents := actionToRun.Run(&actionRequest.Tracker, &actionRequest.Domain, dispatcher)
 
+	if events.HasRejection(newEvents) {
+		return nil, &ExecutionRejectedError{name:actionRequest.ActionToRun}
+	}
 	responseBody := ActionResponse(newEvents, dispatcher)
 	return responseBody, nil
 }

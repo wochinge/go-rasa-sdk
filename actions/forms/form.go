@@ -33,12 +33,8 @@ func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain, dispatcher res
 	if len(slotCandidates) == 0 && form.wasAlreadyActive(tracker) {
 		// Reject to execute the form action if some slot was requested but nothing was extracted.
 		// This will allow other policies to predict another action.
-		// TODO: This has to affect the return code
 		return []events.Event{&events.ActionExecutionRejected{}}
 	}
-
-	// TODO: Check default behavior if no mapping given for slot
-	// TODO: Handle weird trigger intent
 
 	newEvents = append(newEvents, form.validatedSlots(slotCandidates, domain, tracker, dispatcher)...)
 
@@ -96,7 +92,7 @@ func (form *Form) fillSlotsWhichWereNotRequestedButFilledAnyway(requestedSlot st
 		for _, mapping := range form.mappingsFor(slotName) {
 			mappings = append(mappings, SlotMapping{Intents: mapping.Intents, Entity: mapping.Entity})
 		}
-		// TODO: only if different from already set slot
+		// TODO: only if different from already set slot ??
 		newEvents = append(newEvents, form.slotEventsFor(slotName, mappings, tracker)...)
 	}
 	return newEvents

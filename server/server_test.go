@@ -48,7 +48,6 @@ func TestRunAction(t *testing.T)  {
 
 	expectedResponse := `{"events":[{"event":"restart"}],"responses":[]}`
 	assert.Equal(t, expectedResponse, response.Body.String())
-
 }
 
 func TestRunActionNotFound(t *testing.T) {
@@ -75,6 +74,27 @@ func TestRunActionInvalidPayload(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	handler := GetRouter()
+
+	handler.ServeHTTP(response, request)
+
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+}
+
+type RejectingAction struct{}
+func (action *RejectingAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
+	return []events.Event{&events.ActionExecutionRejected{}}
+}
+func (action *RejectingAction) Name() string {return "test-reject"}
+
+func TestActionRejectsExecution(t *testing.T)  {
+	body := []byte(`{"next_action": "test-reject""}`)
+	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response := httptest.NewRecorder()
+	handler := GetRouter(&RejectingAction{})
 
 	handler.ServeHTTP(response, request)
 

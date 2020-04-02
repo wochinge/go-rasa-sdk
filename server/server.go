@@ -36,12 +36,25 @@ func runAction(availableActions []actions.Action) func(http.ResponseWriter, *htt
 
 		responseBody, err := actions.ExecuteAction(actionRequest, availableActions)
 
-		if err != nil {
-			sendJSONResponse(w, errorResponse{Error: fmt.Sprintf("Action execution failed with error: %v.", err)},
-				http.StatusNotFound)
+		if err == nil {
+			sendJSONResponse(w, responseBody, http.StatusOK)
 			return
 		}
-		sendJSONResponse(w, responseBody, http.StatusOK)
+
+		handleExecutionError(w, actionRequest.ActionToRun, err)
+	}
+}
+
+func handleExecutionError(w http.ResponseWriter, actionName string, err error) {
+	switch err.(type) {
+	case *actions.NotFoundError:
+		sendJSONResponse(w, errorResponse{Error: fmt.Sprintf("Action execution failed with error: %v.", err),
+			ActionName:actionName}, http.StatusNotFound)
+		return
+	case *actions.ExecutionRejectedError:
+		sendJSONResponse(w, errorResponse{Error: fmt.Sprintf("Action execution failed with error: %v.", err),
+			ActionName:actionName}, http.StatusBadRequest)
+		return
 	}
 }
 
