@@ -22,10 +22,65 @@ type errorResponse struct {
 	ActionName string `json:"action_name"`
 }
 
+// Serve runs the action server on port port.
+func Serve(port int, actions ...actions.Action) {
+	setup(actions)
+
+	err := http.ListenAndServe(address(port), GetRouter(actions...))
+
+	tearDown(err)
+}
+
+func setup(actions []actions.Action) {
+	log.SetLevel(log.InfoLevel)
+	logAvailableActions(actions)
+}
+
+func address(port int) string {
+	log.Infof("Action server running on on port %v", port)
+	return fmt.Sprintf(":%v", port)
+}
+
+func tearDown(err error) {
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+func logAvailableActions(actions []actions.Action) {
+	var actionNames []string
+	for _, action := range actions {
+		actionNames = append(actionNames, action.Name())
+	}
+
+	log.Infof("The following actions are loaded: %v", actionNames)
+}
+
+// GetRouter returns the routes for which the server accepts requests.
+func GetRouter(actions ...actions.Action) http.Handler {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/health", health).Methods("GET", "OPTIONS")
+	router.HandleFunc("/webhook", runAction(actions)).Methods("POST")
+
+	return router
+}
+
 func health(w http.ResponseWriter, _ *http.Request) {
 	responseBody := healthResponse{"ok"}
 
 	sendJSONResponse(w, responseBody, http.StatusOK)
+}
+
+func sendJSONResponse(writer http.ResponseWriter, responseBody interface{}, status int) {
+	serialized, _ := json.Marshal(responseBody)
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(status)
+
+	_, err := writer.Write(serialized)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func runAction(availableActions []actions.Action) func(http.ResponseWriter, *http.Request) {
@@ -59,52 +114,4 @@ func handleExecutionError(w http.ResponseWriter, actionName string, err error) {
 			ActionName: actionName}, http.StatusBadRequest)
 		return
 	}
-}
-
-func sendJSONResponse(writer http.ResponseWriter, responseBody interface{}, status int) {
-	serialized, _ := json.Marshal(responseBody)
-
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(status)
-
-	_, err := writer.Write(serialized)
-	if err != nil {
-		log.Error(err)
-	}
-}
-
-// GetRouter returns the routes for which the server accepts requests.
-func GetRouter(actions ...actions.Action) http.Handler {
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/health", health).Methods("GET", "OPTIONS")
-	router.HandleFunc("/webhook", runAction(actions)).Methods("POST")
-
-	return router
-}
-
-// Serve runs the action server on port port.
-func Serve(port int, actions ...actions.Action) error {
-	log.SetLevel(log.InfoLevel)
-
-	logAvailableActions(actions)
-
-	log.Infof("Action server running on on port %v", port)
-	address := fmt.Sprintf(":%v", port)
-
-	err := http.ListenAndServe(address, GetRouter(actions...))
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	return err
-}
-
-func logAvailableActions(actions []actions.Action) {
-	var actionNames []string
-	for _, action := range actions {
-		actionNames = append(actionNames, action.Name())
-	}
-
-	log.Infof("The following actions are loaded: %v", actionNames)
 }
