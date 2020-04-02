@@ -84,10 +84,27 @@ func GetRouter(actions ...actions.Action) http.Handler {
 
 // Serve runs the action server on port port.
 func Serve(port int, actions ...actions.Action) error {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
+
+	logAvailableActions(actions)
 
 	log.Infof("Action server running on on port %v", port)
 	address := fmt.Sprintf(":%v", port)
 
-	return http.ListenAndServe(address, GetRouter(actions...))
+	err := http.ListenAndServe(address, GetRouter(actions...))
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
+}
+
+func logAvailableActions(actions []actions.Action) {
+	var actionNames []string
+	for _, action := range actions {
+		actionNames = append(actionNames, action.Name())
+	}
+
+	log.Infof("The following actions are loaded: %v", actionNames)
 }
