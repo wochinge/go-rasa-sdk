@@ -1,0 +1,54 @@
+name: Lint and Test
+
+on:
+  push:
+    branches:
+      - 'master'
+      - '[0-9]+.[0-9]+.x'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: '^1.14.0'
+
+      - name: Check if formatting is necessary
+        run: |
+          test -z $(gofmt -l -s .)
+
+      - name: Install linter
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.24.0
+
+      - name: Lint code
+        run: |
+          go vet ./...
+          golangci-lint run
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: '^1.14.0'
+
+      - name: Download dependencies
+        run: go install ./...
+
+      - name: Run tests
+        run: go test -cover ./...
