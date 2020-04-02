@@ -24,7 +24,6 @@ func (form *Form) Name() string { return form.FormName }
 func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
 	tracker.Init()
-
 	log.WithFields(log.Fields{"form": form.FormName, "validation": tracker.ActiveForm.Validate}).Debug(
 		"Running form.")
 
@@ -34,25 +33,31 @@ func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain,
 		newEvents = append(newEvents, form.activate(tracker, domain, dispatcher)...)
 	}
 
-	slotCandidates := form.slotCandidates(tracker)
-	if len(slotCandidates) == 0 && form.wasAlreadyActive(tracker) {
+	newSlots, reject := form.newSlotEvents(tracker, domain, dispatcher)
+	newEvents = append(newEvents, newSlots...)
+
+	if reject {
 		// Reject to execute the form action if some slot was requested but nothing was extracted.
 		// This will allow other policies to predict another action.
 		return []events.Event{&events.ActionExecutionRejected{}}
 	}
 
-	newEvents = append(newEvents, form.validatedSlots(slotCandidates, domain, tracker, dispatcher)...)
-
 	nextSlot, allSlotsFilled := form.nextSlotToRequest(tracker)
 	if allSlotsFilled {
-		newEvents = append(newEvents, form.submit(tracker, domain, dispatcher)...)
-
-		return append(newEvents, form.deactivate()...)
+		return append(newEvents, form.deactivate(tracker, domain, dispatcher)...)
 	}
 
-	log.WithField(requestedSlot, nextSlot).Debug("Requesting next slot.")
-
 	return append(newEvents, requestSlot(nextSlot, dispatcher)...)
+}
+
+func (form *Form) newSlotEvents(tracker *rasa.Tracker, domain *rasa.Domain,
+	dispatcher responses.ResponseDispatcher) ([]events.Event, bool) {
+	slotCandidates := form.slotCandidates(tracker)
+	if len(slotCandidates) == 0 && form.wasAlreadyActive(tracker) {
+		return nil, true
+	}
+
+	return form.validatedSlots(slotCandidates, domain, tracker, dispatcher), false
 }
 
 func (form *Form) wasAlreadyActive(tracker *rasa.Tracker) bool {
@@ -187,12 +192,19 @@ func (form *Form) nextSlotToRequest(tracker *rasa.Tracker) (string, bool) {
 	return "", true
 }
 
-func (form *Form) deactivate() []events.Event {
+func (form *Form) deactivate(tracker *rasa.Tracker, domain *rasa.Domain,
+	dispatcher responses.ResponseDispatcher) []events.Event {
 	log.WithField("name", form.FormName).Debug("Deactivating form.")
-	return []events.Event{&events.Form{Name: ""}, &events.SlotSet{Name: requestedSlot, Value: nil}}
+
+	return append(
+		form.submit(tracker, domain, dispatcher),
+		&events.Form{Name: ""},
+		&events.SlotSet{Name: requestedSlot, Value: nil})
 }
 
 func requestSlot(slotName string, dispatcher responses.ResponseDispatcher) []events.Event {
+	log.WithField(requestedSlot, slotName).Debug("Requesting next slot.")
+
 	templateNameForSlotRequest := fmt.Sprintf("utter_ask_%s", slotName)
 
 	dispatcher.Utter(responses.BotMessage{Template: templateNameForSlotRequest})
