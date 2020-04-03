@@ -31,6 +31,9 @@ const (
 	userUtteranceReverted Type = "rewind"
 	restarted             Type = "restart"
 	allSlotsReset         Type = "reset_slots"
+
+	reminderScheduled Type = "reminder"
+	reminderCanceled  Type = "cancel_reminder"
 )
 
 // Parsed parses and returns conversation events from JSON to their Go representation.
@@ -89,6 +92,9 @@ func eventParser(base Base) (func() Event, bool) {
 		userUtteranceReverted: func() Event { return &UserUtteranceReverted{Base: base} },
 		restarted:             func() Event { return &Restarted{Base: base} },
 		allSlotsReset:         func() Event { return &AllSlotsReset{Base: base} },
+
+		reminderScheduled: func() Event { return &ReminderScheduled{Base: base} },
+		reminderCanceled:  func() Event { return &ReminderCancelled{Base: base} },
 	}
 
 	eventCreator, found := eventParsers[base.Type]
@@ -325,3 +331,33 @@ type ActionExecutionRejected struct {
 }
 
 func (*ActionExecutionRejected) EventType() Type { return actionExecutionRejected }
+
+// ReminderScheduled triggers a certain intent at a specific date.
+type ReminderScheduled struct {
+	Base
+	// Name of the reminder.
+	Name string `json:"name,omitempty"`
+	// Intent which is triggered by this reminder.
+	Intent string `json:"intent"`
+	// Entities which are part of the intent which triggers the reminder.
+	Entities []Entity `json:"entities"`
+	// Datetime in iso format at which the reminder fires.
+	DateTime string `json:"date_time"`
+	// KillOnUserMessage kills the reminder if there is a user message before the reminder fires.
+	KillOnUserMessage bool `json:"kill_on_user_message"`
+}
+
+func (*ReminderScheduled) EventType() Type { return reminderScheduled }
+
+// ReminderScheduled cancels a scheduled reminder.
+type ReminderCancelled struct {
+	Base
+	// Name of the reminder to cancel.
+	Name string `json:"name,omitempty"`
+	// Intent of the reminder to cancel.
+	Intent string `json:"intent"`
+	// Entities of the reminder to cancel.
+	Entities []Entity `json:"entities"`
+}
+
+func (*ReminderScheduled) ReminderCancelled() Type { return reminderCanceled }

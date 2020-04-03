@@ -176,10 +176,6 @@ func TestParseTrackerEvents(t *testing.T) {
 		},
 	}
 
-	for i, e := range expectedEvents {
-		assert.Equal(t, e, parsed.Tracker.Events[i])
-	}
-
 	assert.ElementsMatch(t, parsed.Tracker.Events, expectedEvents)
 }
 
@@ -189,6 +185,19 @@ func TestParsedActiveForm(t *testing.T) {
 
 	assert.Equal(t, parsed.Tracker.ActiveForm, rasa.ActiveForm{Name: "my-form", Validate: true,
 		Rejected: false, TriggerMessage: events.ParseData{}})
+}
+
+func TestParsedReminderEvents(t *testing.T) {
+	parsed, err := parsedJSON("request_with_reminders.json")
+	assert.Nil(t, err)
+
+	expectedEvents := []events.Event{
+		&events.ReminderScheduled{Base: events.Base{Type: "reminder", Timestamp: 123}, Name: "my reminder",
+			Intent: "greet", Entities: []events.Entity{}, DateTime: "2020-04-03T16:23:33.539198"},
+		&events.ReminderCancelled{Base: events.Base{Type: "cancel_reminder", Timestamp: 1234},
+			Name: "my reminder", Intent: "greet", Entities: []events.Entity{}}}
+
+	assert.Equal(t, expectedEvents, parsed.Tracker.Events)
 }
 
 func parsedJSON(path string) (CustomActionRequest, error) {
