@@ -12,9 +12,11 @@ import (
 // triggered during a conversation.
 type HelloWorldAction struct{}
 
-func (action *HelloWorldAction) Run(_ *rasa.Tracker,
-	_ *rasa.Domain,
-	dispatcher responses.ResponseDispatcher) []events.Event {
+func (action *HelloWorldAction) Run(
+	_ *rasa.Tracker, // the tracker containing the conversation history
+	_ *rasa.Domain,  // the domain of the currently loaded model in Rasa
+	dispatcher responses.ResponseDispatcher, // a dispatcher to send messages to the user
+	) []events.Event {
 
 	// Your action code goes here
 
