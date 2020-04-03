@@ -4,17 +4,25 @@ import (
 	"github.com/wochinge/go-rasa-sdk/rasa"
 )
 
+// SlotMapping specifies which information is used to fill a form slot.
 type SlotMapping struct {
+	// ApplyToFirstRunOnly specifies if the mapping should only apply when the form is activated.
 	ApplyToFirstRunOnly bool
-	FromText            bool
-	Entity              string
-	Intents             []string
-	ExcludedIntents     []string
-	Value               interface{}
+	// FromText fills the requested slot with the user message.
+	FromText bool
+	// FromEntity fills the slot with an entity of a given name.
+	FromEntity string
+	// Intents which the latest message has to have that this mapping applies.
+	// If `nil` and `ExcludedIntents` is also `nil`, all intents are valid.
+	Intents []string
+	// ExcludedIntents specifies intents which this mapping should not apply to.
+	ExcludedIntents []string
+	// Value can be used to hard code the slot value in case the mapping applies.
+	Value interface{}
 }
 
 func defaultSlotMapping(slotName string) []SlotMapping {
-	return []SlotMapping{{Entity: slotName}}
+	return []SlotMapping{{FromEntity: slotName}}
 }
 
 func (mapping SlotMapping) apply(form *Form, tracker *rasa.Tracker) (interface{}, bool) {
@@ -23,7 +31,7 @@ func (mapping SlotMapping) apply(form *Form, tracker *rasa.Tracker) (interface{}
 		return nil, false
 	}
 
-	if entity, found := latestMessage.EntityFor(mapping.Entity); found && mapping.Entity != "" {
+	if entity, found := latestMessage.EntityFor(mapping.FromEntity); found && mapping.FromEntity != "" {
 		return entity, true
 	}
 

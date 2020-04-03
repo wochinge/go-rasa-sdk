@@ -1,3 +1,4 @@
+// Package actions contains everything to implement custom actions using the go-rasa-sdk.
 package actions
 
 import (
@@ -5,25 +6,34 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/rasa/request"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 )
 
+// Action is the interface for all custom action implementations.
 type Action interface {
+	// Run runs the custom action in the given context and returns new conversation events.
+	// Any messages dispatched will be sent to the user.
 	Run(tracker *rasa.Tracker, domain *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event
+	// Name returns the name of the custom action.
 	Name() string
 }
 
+// NotFoundError happens when no action was found for the given name.
 type NotFoundError struct{ name string }
 
 func (e *NotFoundError) Error() string { return fmt.Sprintf("action '%s' was not found.", e.name) }
 
+// ExecutionRejectedError happens when the action rejected its execution.
 type ExecutionRejectedError struct{ name string }
 
 func (e *ExecutionRejectedError) Error() string {
 	return fmt.Sprintf("action '%s' rejected execution.", e.name)
 }
 
-func ExecuteAction(actionRequest rasa.CustomActionRequest, availableActions []Action) (map[string]interface{}, error) {
+// ExecuteAction executes the custom action which was requested by Rasa Open Source.
+func ExecuteAction(actionRequest request.CustomActionRequest,
+	availableActions []Action) (map[string]interface{}, error) {
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 
 	if actionToRun == nil {
@@ -45,7 +55,7 @@ func ExecuteAction(actionRequest rasa.CustomActionRequest, availableActions []Ac
 
 	log.WithFields(log.Fields{"action": actionToRun, "events": newEvents}).Debug("Action execution finished.")
 
-	return ActionResponse(newEvents, dispatcher), nil
+	return actionResponse(newEvents, dispatcher), nil
 }
 
 func actionFor(name string, actions []Action) Action {
@@ -58,7 +68,7 @@ func actionFor(name string, actions []Action) Action {
 	return nil
 }
 
-func ActionResponse(newEvents []events.Event, dispatcher responses.ResponseDispatcher) map[string]interface{} {
+func actionResponse(newEvents []events.Event, dispatcher responses.ResponseDispatcher) map[string]interface{} {
 	return map[string]interface{}{
 		"events":    events.WithTypeKeys(newEvents...),
 		"responses": dispatcher.Responses(),

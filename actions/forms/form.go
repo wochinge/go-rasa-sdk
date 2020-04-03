@@ -1,3 +1,4 @@
+// Package form implements the logic for Rasa Open Source forms (https://rasa.com/docs/rasa/core/forms/).
 package forms
 
 import (
@@ -10,17 +11,25 @@ import (
 
 const requestedSlot = "requested_slot"
 
+// Form to validate and map user input to slots (https://rasa.com/docs/rasa/core/forms/).
+// Special implementation of a custom action which implements the logic required by Rasa Open Source.
 type Form struct {
+	// FormName is the name of the form.
 	FormName string
 
+	// RequiredSlots specifies the slots which have to be filled by this form.
 	RequiredSlots []string
-	SlotMappings  map[string][]SlotMapping
-	Validators    map[string][]SlotValidator
-	OnSubmit      func(*rasa.Tracker, *rasa.Domain, responses.ResponseDispatcher) []events.Event
+	// SlotMappings define how the slots are filled.
+	SlotMappings map[string][]SlotMapping
+	// Validators specify functions to validate slot candidates.
+	Validators map[string][]SlotValidator
+	// OnSubmit is a function which is run when all slots are filled and the form is complete.
+	OnSubmit func(*rasa.Tracker, *rasa.Domain, responses.ResponseDispatcher) []events.Event
 }
 
 func (form *Form) Name() string { return form.FormName }
 
+// Run is executed whenever Rasa Open Source sends a request to execute this form.
 func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
 	tracker.Init()
@@ -109,7 +118,7 @@ func (form *Form) fillProvidedButNotRequested(requestedSlot string, tracker *ras
 		var mappings []SlotMapping
 
 		for _, mapping := range form.mappingsFor(slotName) {
-			mappings = append(mappings, SlotMapping{Intents: mapping.Intents, Entity: mapping.Entity})
+			mappings = append(mappings, SlotMapping{Intents: mapping.Intents, FromEntity: mapping.FromEntity})
 		}
 
 		newEvents = append(newEvents, form.slotEventsFor(slotName, mappings, tracker)...)
@@ -160,16 +169,6 @@ func (form *Form) validatedSlots(candidates []events.SlotSet, domain *rasa.Domai
 	return toEventInterface(slots)
 }
 
-func (form *Form) validatorFor(slotName string, tracker *rasa.Tracker) SlotValidator {
-	validators := form.Validators[slotName]
-
-	if tracker.NoFormValidation() || validators == nil {
-		return &DefaultValidator{}
-	}
-
-	return &MultiValidator{validators}
-}
-
 func toEventInterface(slots []events.SlotSet) []events.Event {
 	var wrapped []events.Event
 
@@ -207,7 +206,7 @@ func requestSlot(slotName string, dispatcher responses.ResponseDispatcher) []eve
 
 	templateNameForSlotRequest := fmt.Sprintf("utter_ask_%s", slotName)
 
-	dispatcher.Utter(responses.BotMessage{Template: templateNameForSlotRequest})
+	dispatcher.Utter(responses.Message{Template: templateNameForSlotRequest})
 
 	return []events.Event{&events.SlotSet{Name: requestedSlot, Value: slotName}}
 }

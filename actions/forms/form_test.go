@@ -107,7 +107,7 @@ func TestFillSlots(t *testing.T) {
 
 	// Prepare form
 	requiredSlots := []string{slotName}
-	slotMapping := SlotMapping{Entity: name}
+	slotMapping := SlotMapping{FromEntity: name}
 	testForm := Form{FormName: testFormName, RequiredSlots: requiredSlots,
 		SlotMappings: map[string][]SlotMapping{slotName: {slotMapping}}}
 
@@ -148,7 +148,7 @@ func TestFillOtherSlotsIfEntitiesGiven(t *testing.T) {
 	tracker := rasa.Tracker{LatestMessage: lastMessage, Slots: map[string]interface{}{requestedSlot: requested}}
 
 	mappings := map[string][]SlotMapping{requested: {{FromText: true}},
-		otherSlot: {{Entity: otherSlot, Value: expectedValue}}}
+		otherSlot: {{FromEntity: otherSlot, Value: expectedValue}}}
 	testForm := Form{FormName: "bla", RequiredSlots: []string{otherSlot, requested}, SlotMappings: mappings}
 
 	newEvents := testForm.slotCandidates(&tracker)
@@ -239,6 +239,6 @@ func TestRequestNextSlot(t *testing.T) {
 		&events.SlotSet{Name: requestedSlot, Value: requiredSlot}}
 	assert.ElementsMatch(t, expected, newEvents)
 
-	expectedResponses := []responses.BotMessage{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
+	expectedResponses := []responses.Message{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }

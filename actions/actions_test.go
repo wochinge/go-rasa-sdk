@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/rasa/request"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"testing"
 )
@@ -29,7 +30,7 @@ type ActionDispatchingResponses struct{}
 
 func (action *ActionDispatchingResponses) Run(_ *rasa.Tracker, _ *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
-	message := responses.BotMessage{Text: "Hello World"}
+	message := responses.Message{Text: "Hello World"}
 	dispatcher.Utter(message)
 
 	return []events.Event{}
@@ -42,12 +43,12 @@ func TestActionDispatchingResponses(t *testing.T) {
 	dispatcher := responses.NewDispatcher()
 	action.Run(&rasa.Tracker{}, &rasa.Domain{}, dispatcher)
 
-	expectedResponses := []responses.BotMessage{{Text: "Hello World"}}
+	expectedResponses := []responses.Message{{Text: "Hello World"}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }
 
 func TestActionResponseEmpty(t *testing.T) {
-	response := ActionResponse([]events.Event{}, responses.NewDispatcher())
+	response := actionResponse([]events.Event{}, responses.NewDispatcher())
 	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
@@ -58,10 +59,10 @@ func TestActionResponseEmpty(t *testing.T) {
 
 func TestActionResponseWithMultipleResponses(t *testing.T) {
 	dispatcher := responses.NewDispatcher()
-	dispatcher.Utter(responses.BotMessage{Text: "hi"})
-	dispatcher.Utter(responses.BotMessage{Template: "utter_ask"})
+	dispatcher.Utter(responses.Message{Text: "hi"})
+	dispatcher.Utter(responses.Message{Template: "utter_ask"})
 
-	response := ActionResponse([]events.Event{}, dispatcher)
+	response := actionResponse([]events.Event{}, dispatcher)
 	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
@@ -73,7 +74,7 @@ func TestActionResponseWithMultipleResponses(t *testing.T) {
 func TestActionResponseWithEvents(t *testing.T) {
 	newEvents := []events.Event{&events.Restarted{}, &events.SlotSet{Name: "my cool slot", Value: "best value"}}
 
-	response := ActionResponse(newEvents, responses.NewDispatcher())
+	response := actionResponse(newEvents, responses.NewDispatcher())
 	actualAsJSON, err := json.Marshal(response)
 
 	assert.Nil(t, err)
@@ -91,7 +92,7 @@ func (action *RejectingAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.
 func (action *RejectingAction) Name() string { return "test-reject" }
 
 func TestActionRejectingExecution(t *testing.T) {
-	actionRequest := rasa.CustomActionRequest{ActionToRun: "test-reject"}
+	actionRequest := request.CustomActionRequest{ActionToRun: "test-reject"}
 
 	_, err := ExecuteAction(actionRequest, []Action{&RejectingAction{}})
 

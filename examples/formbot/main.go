@@ -1,3 +1,5 @@
+// Package main contains the Go equivalent of the Rasa example for forms
+// (https://github.com/RasaHQ/rasa/tree/master/examples/formbot).
 package main
 
 import (
@@ -10,6 +12,7 @@ import (
 	"strings"
 )
 
+// CuisineValidator validates if the provided cuisine type is a valid choice.
 type CuisineValidator struct{}
 
 func (v *CuisineValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
@@ -27,11 +30,12 @@ func (v *CuisineValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tr
 		}
 	}
 
-	dispatcher.Utter(responses.BotMessage{Template: "utter_wrong_cuisine"})
+	dispatcher.Utter(responses.Message{Template: "utter_wrong_cuisine"})
 
 	return nil, false
 }
 
+// NumPeopleValidator validates if the provided number of people for the restaurant reservation is valid.
 type NumPeopleValidator struct{}
 
 func (v *NumPeopleValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
@@ -51,13 +55,14 @@ func (v *NumPeopleValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.
 	}
 
 	if people < 1 {
-		dispatcher.Utter(responses.BotMessage{Template: "utter_wrong_num_people"})
+		dispatcher.Utter(responses.Message{Template: "utter_wrong_num_people"})
 		return nil, false
 	}
 
 	return people, true
 }
 
+// OutdoorSeatingValidator validates the answer of the user whether they want to sit outside.
 type OutdoorSeatingValidator struct{}
 
 func (v *OutdoorSeatingValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
@@ -74,7 +79,7 @@ func (v *OutdoorSeatingValidator) IsValid(value interface{}, _ *rasa.Domain, _ *
 		}
 	}
 
-	dispatcher.Utter(responses.BotMessage{Template: "utter_wrong_outdoor_seating"})
+	dispatcher.Utter(responses.Message{Template: "utter_wrong_outdoor_seating"})
 	return nil, false
 }
 
@@ -83,25 +88,25 @@ func main() {
 		FormName:      "restaurant_form",
 		RequiredSlots: []string{"cuisine", "num_people", "outdoor_seating", "preferences", "feedback"},
 		SlotMappings: map[string][]forms.SlotMapping{
-			"cuisine": {{Entity: "cuisine", ExcludedIntents: []string{"chitchat"}}},
+			"cuisine": {{FromEntity: "cuisine", ExcludedIntents: []string{"chitchat"}}},
 			"num_people": {
-				{Entity: "num_people", Intents: []string{"inform", "request_restaurant"}},
-				{Entity: "number"}},
+				{FromEntity: "num_people", Intents: []string{"inform", "request_restaurant"}},
+				{FromEntity: "number"}},
 			"outdoor_seating": {
-				{Entity: "seating"},
+				{FromEntity: "seating"},
 				{Intents: []string{"affirm"}, Value: true},
 				{Intents: []string{"deny"}, Value: false}},
 			"preferences": {
 				{Intents: []string{"deny"}, Value: "no additional preferences"},
 				{FromText: true, ExcludedIntents: []string{"affirm"}}},
-			"feedback": {{Entity: "feedback"}, {FromText: true}}},
+			"feedback": {{FromEntity: "feedback"}, {FromText: true}}},
 		Validators: map[string][]forms.SlotValidator{
 			"cuisine":         {&CuisineValidator{}},
 			"num_people":      {&NumPeopleValidator{}},
 			"outdoor_seating": {&OutdoorSeatingValidator{}},
 		},
 		OnSubmit: func(_ *rasa.Tracker, _ *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
-			dispatcher.Utter(responses.BotMessage{Template: "utter_submit"})
+			dispatcher.Utter(responses.Message{Template: "utter_submit"})
 			return []events.Event{}
 		},
 	}

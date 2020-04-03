@@ -1,7 +1,8 @@
-package rasa
+package request
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"os"
@@ -51,10 +52,10 @@ func TestParsedDomainConfig(t *testing.T) {
 
 	domain := parsed.Domain
 
-	expectedSessionConfig := SessionConfig{123.45, true}
+	expectedSessionConfig := rasa.SessionConfig{SessionExpirationTime: 123.45, CarryOverSlotsToNewSession: true}
 	assert.Equal(t, domain.SessionConfig, expectedSessionConfig)
 
-	expectedConfig := Config{true}
+	expectedConfig := rasa.Config{StoreEntitiesAsSlots: true}
 	assert.Equal(t, domain.Config, expectedConfig)
 }
 
@@ -82,12 +83,12 @@ func TestParsedDomainSlots(t *testing.T) {
 
 	domain := parsed.Domain
 
-	expectedSlots := []Slot{
-		{Name: "budget", Type: "rasa.core.slots.UnfeaturizedSlot", AutoFill: true},
-		{Name: "current_api", Type: "rasa.core.slots.CategoricalSlot", AutoFill: true},
-		{Name: "name", Type: "rasa.core.slots.TextSlot", AutoFill: true},
-		{Name: "onboarding", Type: "rasa.core.slots.BooleanSlot", AutoFill: true}}
-	assert.ElementsMatch(t, domain.Slots, expectedSlots)
+	expectedSlots := map[string]rasa.Slot{
+		"budget":      {Type: "rasa.core.slots.UnfeaturizedSlot", AutoFill: true},
+		"current_api": {Type: "rasa.core.slots.CategoricalSlot", AutoFill: true},
+		"name":        {Type: "rasa.core.slots.TextSlot", AutoFill: true},
+		"onboarding":  {Type: "rasa.core.slots.BooleanSlot", AutoFill: true}}
+	assert.Equal(t, domain.Slots, expectedSlots)
 }
 
 func TestParsedDomainResponses(t *testing.T) {
@@ -96,10 +97,10 @@ func TestParsedDomainResponses(t *testing.T) {
 
 	domain := parsed.Domain
 
-	expectedResponses := map[string][]Response{
+	expectedResponses := map[string][]rasa.Response{
 		"utter_already_subscribed": {{Text: "spam folder 🗑"}},
-		"utter_ask_docs_help": {{"Did that help?", "",
-			[]responses.Button{{Title: "👍", PayLoad: `/affirm`}, {Title: "👎", PayLoad: `/deny`}}}},
+		"utter_ask_docs_help": {{Text: "Did that help?",
+			Buttons: []responses.Button{{Title: "👍", PayLoad: `/affirm`}, {Title: "👎", PayLoad: `/deny`}}}},
 		"utter_continue_step2": {
 			{Text: "Let's continue", Channel: "socketio"},
 			{Text: "Let's continue, please click the button below.",
@@ -154,7 +155,7 @@ func TestParseTrackerEvents(t *testing.T) {
 					{Name: "mood_deny", Confidence: 0.01}}, Text: "hello"},
 			MessageID: "c25928b830814f8180336745d9ad29f2", InputChannel: "rasa"},
 		&events.Bot{Base: events.Base{Type: "bot", Timestamp: 1234}, Text: "Peace",
-			Data: responses.BotMessage{Elements: []interface{}{}, Buttons: []responses.Button{}, Attachment: nil}},
+			Data: responses.Message{Elements: []interface{}{}, Buttons: []responses.Button{}, Attachment: nil}},
 		&events.SessionStarted{Base: events.Base{Type: "session_started", Timestamp: 1584966507.4802930355}},
 		&events.SlotSet{Base: events.Base{Type: "slot", Timestamp: 1560425053.3079407215}, Name: "name", Value: "test"},
 		&events.ConversationPaused{Base: events.Base{Type: "pause", Timestamp: 99.1}},
@@ -185,12 +186,12 @@ func TestParsedActiveForm(t *testing.T) {
 	parsed, err := parsedJSON("request_with_active_form.json")
 	assert.Nil(t, err)
 
-	assert.Equal(t, parsed.Tracker.ActiveForm, ActiveForm{Name: "my-form", Validate: true,
+	assert.Equal(t, parsed.Tracker.ActiveForm, rasa.ActiveForm{Name: "my-form", Validate: true,
 		Rejected: false, TriggerMessage: events.ParseData{}})
 }
 
 func parsedJSON(path string) (CustomActionRequest, error) {
-	const testDataDir = "../test/"
+	const testDataDir = "../../test/"
 	fullPath := filepath.Join(testDataDir, path)
 	reader, _ := os.Open(fullPath)
 

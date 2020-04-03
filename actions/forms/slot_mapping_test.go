@@ -17,7 +17,7 @@ func TestFillSlotFromEntity(t *testing.T) {
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: testEntity, Value: testEntityValue}}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	value, found := SlotMapping{Entity: testEntity}.apply(nil, &tracker)
+	value, found := SlotMapping{FromEntity: testEntity}.apply(nil, &tracker)
 	assert.True(t, found)
 	assert.Equal(t, testEntityValue, value)
 }
@@ -27,7 +27,7 @@ func TestFillSlotFromEntityWithIntentSpecified(t *testing.T) {
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	value, found := SlotMapping{Entity: testEntity, Intents: []string{"bye", intentName}}.apply(nil, &tracker)
+	value, found := SlotMapping{FromEntity: testEntity, Intents: []string{"bye", intentName}}.apply(nil, &tracker)
 	assert.True(t, found)
 	assert.Equal(t, testEntityValue, value)
 }
@@ -37,7 +37,7 @@ func TestFillSlotFromEntityWithIntentNotSpecified(t *testing.T) {
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	_, found := SlotMapping{Entity: testEntity, Intents: []string{"bye"}}.apply(nil, &tracker)
+	_, found := SlotMapping{FromEntity: testEntity, Intents: []string{"bye"}}.apply(nil, &tracker)
 	assert.False(t, found)
 }
 
@@ -46,7 +46,7 @@ func TestFillSlotFromEntityWithIntentExcluded(t *testing.T) {
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	_, found := SlotMapping{Entity: testEntity, ExcludedIntents: []string{intentName}}.apply(nil, &tracker)
+	_, found := SlotMapping{FromEntity: testEntity, ExcludedIntents: []string{intentName}}.apply(nil, &tracker)
 	assert.False(t, found)
 }
 
@@ -55,7 +55,7 @@ func TestFillSlotFromEntityWithIntentExcludedButAllowedWasGiven(t *testing.T) {
 		Intent: events.IntentParseResult{Name: intentName}}
 	tracker := rasa.Tracker{LatestMessage: lastMessage}
 
-	_, found := SlotMapping{Entity: testEntity, ExcludedIntents: []string{"someother"}}.apply(nil, &tracker)
+	_, found := SlotMapping{FromEntity: testEntity, ExcludedIntents: []string{"someother"}}.apply(nil, &tracker)
 	assert.True(t, found)
 }
 
