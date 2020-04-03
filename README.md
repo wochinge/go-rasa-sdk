@@ -25,9 +25,9 @@ type Action interface {
     
     // Run runs the custom action in the given context and returns new conversation events.
     // Any messages dispatched will be sent to the user.
-    Run(tracker *rasa.Tracker, 
-        domain *rasa.Domain, 
-        dispatcher responses.ResponseDispatcher,
+    Run(_ *rasa.Tracker, // the tracker containing the conversation history
+        _ *rasa.Domain,  // the domain of the currently loaded model in Rasa
+        dispatcher responses.ResponseDispatcher, // a dispatcher to send messages to the user
         ) []events.Event
     
     // Name returns the name of the custom action.
@@ -47,9 +47,9 @@ import (
 type GreetAction struct{}
 
 func (action *GreetAction) Run(
-    _ *rasa.Tracker, // the tracker containing the conversation history
-    _ *rasa.Domain,  // the domain of the currently loaded model in Rasa
-    dispatcher responses.ResponseDispatcher, // a dispatcher to send messages to the user
+    _ *rasa.Tracker,
+    _ *rasa.Domain,
+    dispatcher responses.ResponseDispatcher,
 ) []events.Event {
     
     // Your action code goes here
@@ -116,7 +116,9 @@ func main() {
         },
 
         // OnSubmit is triggered when the form filled all required slots are filled
-        OnSubmit: func(_ *rasa.Tracker, _ *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
+        OnSubmit: func(_ *rasa.Tracker,
+            _ *rasa.Domain,
+            dispatcher responses.ResponseDispatcher) []events.Event {
             // We tell the user that the age was successfully provided
             dispatcher.Utter(responses.Message{Template: "utter_age_provided"})
             return []events.Event{}
