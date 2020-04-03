@@ -1,4 +1,5 @@
 # go-rasa-sdk
+![Lint and Test](https://github.com/wochinge/go-rasa-sdk/workflows/Lint%20and%20Test/badge.svg?branch=master)
 
 Go implementation of [Rasa Python SDK](https://github.com/rasahq/rasa-sdk). 
 Use this SDK to implement [custom actions](https://rasa.com/docs/rasa/core/actions/#custom-actions) for 
