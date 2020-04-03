@@ -4,7 +4,7 @@
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/wochinge/go-rasa-sdk?tab=doc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/orgs/RasaHQ/projects/23)
 
-Go implementation of [Rasa Python SDK](https://github.com/rasahq/rasa-sdk). 
+Go implementation of the [Rasa Python SDK](https://github.com/rasahq/rasa-sdk). 
 Use this SDK to implement [custom actions](https://rasa.com/docs/rasa/core/actions/#custom-actions) for 
 Rasa Open Source (>= 1.0).
 
