@@ -56,12 +56,12 @@ func (action *GreetAction) Run(
     dispatcher responses.ResponseDispatcher,
 ) []events.Event {
     
-    // Your action code goes here
+    // Your action code goes here.
     
-    // Dispatching the message
+    // Dispatching the message.
     dispatcher.Utter(responses.Message{Text: "Hello"})
     
-    // See all possible events to return in github.com/wochinge/go-rasa-sdk/rasa/events
+    // See all possible events to return in github.com/wochinge/go-rasa-sdk/rasa/events .
     return []events.Event{&events.SlotSet{Name: "user_was_greeted", Value: true}}
 }
 
@@ -79,7 +79,7 @@ import (
 )
 
 func main() {
-    // Service is variadic function and accepts multiple actions as argument
+    // Service is variadic function and accepts multiple actions as argument.
 	server.Serve(server.DefaultPort, &GreetAction{})
 }
 
@@ -105,21 +105,21 @@ func main() {
         // in your `domain.yml`
         FormName: "age_form",
 
-        // Slots your form should fill
+        // Slots your form should fill.
         RequiredSlots: []string{"age"},
 
         // Defines how slots are filled
         SlotMappings: map[string][]forms.SlotMapping{
-            // the age slot is filled by an entity with the name `number`
+            // the age slot is filled by an entity with the name `number`.
             "age": {{FromEntity: "number"}}},
 
         // Validators for slot candidates
         Validators: map[string][]forms.SlotValidator{
-            // AgeValidator will validate that the age is not a negative number
+            // AgeValidator will validate that the age is not a negative number.
             "age": {&AgeValidator{}},
         },
 
-        // OnSubmit is triggered when the form filled all required slots are filled
+        // OnSubmit is triggered when all required slots are filled.
         OnSubmit: func(_ *rasa.Tracker,
             _ *rasa.Domain,
             dispatcher responses.ResponseDispatcher) []events.Event {
