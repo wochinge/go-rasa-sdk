@@ -1,6 +1,7 @@
 package request
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
@@ -29,7 +30,7 @@ func TestParsedInvalidEvents(t *testing.T) {
 }
 
 func TestParsedDomainActions(t *testing.T) {
-	parsed, err := parsedJSON("request_With_domain.json")
+	parsed, err := parsedJSON("request_with_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -47,7 +48,7 @@ func TestParsedDomainActions(t *testing.T) {
 }
 
 func TestParsedDomainConfig(t *testing.T) {
-	parsed, err := parsedJSON("request_With_domain.json")
+	parsed, err := parsedJSON("request_with_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -60,7 +61,7 @@ func TestParsedDomainConfig(t *testing.T) {
 }
 
 func TestParsedDomainIntents(t *testing.T) {
-	parsed, err := parsedJSON("request_With_domain.json")
+	parsed, err := parsedJSON("request_with_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -78,7 +79,7 @@ func TestParsedDomainIntents(t *testing.T) {
 }
 
 func TestParsedDomainSlots(t *testing.T) {
-	parsed, err := parsedJSON("request_With_domain.json")
+	parsed, err := parsedJSON("request_with_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -92,7 +93,7 @@ func TestParsedDomainSlots(t *testing.T) {
 }
 
 func TestParsedDomainResponses(t *testing.T) {
-	parsed, err := parsedJSON("request_With_domain.json")
+	parsed, err := parsedJSON("request_with_domain.json")
 	assert.Nil(t, err)
 
 	domain := parsed.Domain
@@ -191,9 +192,13 @@ func TestParsedActiveForm(t *testing.T) {
 }
 
 func parsedJSON(path string) (CustomActionRequest, error) {
-	const testDataDir = "../../test/"
+	const testDataDir = "testdata"
 	fullPath := filepath.Join(testDataDir, path)
-	reader, _ := os.Open(fullPath)
+	reader, err := os.Open(fullPath)
+
+	if err != nil {
+		log.Error(err)
+	}
 
 	return Parsed(reader)
 }
