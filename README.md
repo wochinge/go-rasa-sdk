@@ -166,6 +166,11 @@ func main() {
 }
 ```
 
+## Docker Usage
+
+Please see the [HelloWorld example](https://github.com/wochinge/go-rasa-sdk/tree/master/examples/HelloWorld) for an
+example how to build a Docker image of your Go action server.
+
 ## Code Style
 
 ### Formatting
