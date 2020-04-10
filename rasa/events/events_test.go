@@ -8,7 +8,7 @@ import (
 func TestEventType(t *testing.T) {
 	types := []Type{action, sessionStarted, user, bot, userUtteranceReverted, actionReverted, restarted,
 		storyExported, followUpAction, conversationPaused, conversationResumed, slotSet, allSlotsReset, form,
-		formValidation, actionExecutionRejected}
+		formValidation, actionExecutionRejected, reminderScheduled, reminderCancelled}
 
 	for _, eventType := range types {
 		eventCreator, found := eventParser(Base{Type: eventType})
@@ -21,7 +21,7 @@ func TestEventType(t *testing.T) {
 
 		events := WithTypeKeys(event)
 		assert.Len(t, events, 1)
-		assert.True(t, eventType == event.EventType())
+		assert.Equal(t, eventType, event.EventType())
 	}
 }
 

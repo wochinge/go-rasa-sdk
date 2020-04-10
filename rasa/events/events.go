@@ -33,7 +33,7 @@ const (
 	allSlotsReset         Type = "reset_slots"
 
 	reminderScheduled Type = "reminder"
-	reminderCanceled  Type = "cancel_reminder"
+	reminderCancelled Type = "cancel_reminder"
 )
 
 // Parsed parses and returns conversation events from JSON to their Go representation.
@@ -94,7 +94,7 @@ func eventParser(base Base) (func() Event, bool) {
 		allSlotsReset:         func() Event { return &AllSlotsReset{Base: base} },
 
 		reminderScheduled: func() Event { return &ReminderScheduled{Base: base} },
-		reminderCanceled:  func() Event { return &ReminderCancelled{Base: base} },
+		reminderCancelled: func() Event { return &ReminderCancelled{Base: base} },
 	}
 
 	eventCreator, found := eventParsers[base.Type]
@@ -360,4 +360,4 @@ type ReminderCancelled struct {
 	Entities []Entity `json:"entities"`
 }
 
-func (*ReminderScheduled) ReminderCancelled() Type { return reminderCanceled }
+func (*ReminderCancelled) EventType() Type { return reminderCancelled }
