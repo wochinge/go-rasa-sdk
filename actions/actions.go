@@ -4,6 +4,7 @@ package actions
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/request"
@@ -37,23 +38,24 @@ func ExecuteAction(actionRequest request.CustomActionRequest,
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 
 	if actionToRun == nil {
-		log.WithFields(log.Fields{"action": actionRequest.ActionToRun}).Warn("Requested action not found.")
+		log.WithFields(log.Fields{logging.ActionNameKey: actionRequest.ActionToRun}).Warn("Requested action not found.")
 		return nil, &NotFoundError{name: actionRequest.ActionToRun}
 	}
 
 	log.WithFields(
-		log.Fields{"action": actionToRun, "conversationId": actionRequest.Tracker.ConversationID}).Debug(
-		"Received request to run action.")
+		log.Fields{logging.ActionNameKey: actionToRun,
+			logging.ConversationIDKey: actionRequest.Tracker.ConversationID}).Debug("Received request to run action.")
 
 	dispatcher := responses.NewDispatcher()
 	newEvents := actionToRun.Run(&actionRequest.Tracker, &actionRequest.Domain, dispatcher)
 
 	if events.HasRejection(newEvents) {
-		log.WithFields(log.Fields{"action": actionToRun}).Debug("Action rejected execution.")
+		log.WithFields(log.Fields{logging.ActionNameKey: actionToRun}).Debug("Action rejected execution.")
 		return nil, &ExecutionRejectedError{name: actionRequest.ActionToRun}
 	}
 
-	log.WithFields(log.Fields{"action": actionToRun, "events": newEvents}).Debug("Action execution finished.")
+	log.WithFields(
+		log.Fields{logging.ActionNameKey: actionToRun, logging.EventKeys: newEvents}).Debug("Action execution finished.")
 
 	return actionResponse(newEvents, dispatcher), nil
 }

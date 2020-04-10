@@ -4,6 +4,8 @@ package events
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
+	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 )
 
@@ -34,6 +36,8 @@ const (
 
 	reminderScheduled Type = "reminder"
 	reminderCancelled Type = "cancel_reminder"
+
+	unknown Type = "unknown"
 )
 
 // Parsed parses and returns conversation events from JSON to their Go representation.
@@ -44,12 +48,10 @@ func Parsed(rawEvents []json.RawMessage) ([]Event, error) {
 		var minimalEvent Base
 
 		if err := json.Unmarshal(rawEvent, &minimalEvent); err != nil {
-			return []Event{}, err
+			return nil, err
 		}
 
-		if event := parseBasedOnyTypeKey(minimalEvent, rawEvent); event != nil {
-			events = append(events, event)
-		}
+		events = append(events, parseBasedOnyTypeKey(minimalEvent, rawEvent))
 	}
 
 	return events, nil
@@ -59,12 +61,16 @@ func parseBasedOnyTypeKey(base Base, raw json.RawMessage) Event {
 	eventCreator, ok := eventParser(base)
 
 	if !ok {
-		return nil
+		log.WithField(logging.EventTypeKey, base.Type).Warn("Received event with unknown type.")
+		base.SetType(unknown)
+
+		return &base
 	}
 
 	event := eventCreator()
 	if err := json.Unmarshal(raw, &event); err != nil {
-		return nil
+		log.WithFields(log.Fields{logging.EventTypeKey: base.EventType(), logging.ErrorKey: err})
+		return &base
 	}
 
 	return event
@@ -97,9 +103,11 @@ func eventParser(base Base) (func() Event, bool) {
 		reminderCancelled: func() Event { return &ReminderCancelled{Base: base} },
 	}
 
-	eventCreator, found := eventParsers[base.Type]
+	if eventCreator, found := eventParsers[base.Type]; found {
+		return eventCreator, true
+	}
 
-	return eventCreator, found
+	return nil, false
 }
 
 // WithTypeKeys sets the event type based on their current struct type.
@@ -138,7 +146,7 @@ type Base struct {
 }
 
 // EventType returns the string identifier of the type of event.
-func (*Base) EventType() Type { return "unknown" }
+func (*Base) EventType() Type { return unknown }
 
 // SetType sets the type of an event.
 func (base *Base) SetType(eventType Type) { base.Type = eventType }

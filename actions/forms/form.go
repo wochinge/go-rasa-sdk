@@ -4,6 +4,7 @@ package forms
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
@@ -33,7 +34,8 @@ func (form *Form) Name() string { return form.FormName }
 func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
 	tracker.Init()
-	log.WithFields(log.Fields{"form": form.FormName, "validation": tracker.ActiveForm.Validate}).Debug(
+	log.WithFields(
+		log.Fields{logging.FormNameKey: form.FormName, logging.FormValidationKey: tracker.ActiveForm.Validate}).Debug(
 		"Running form.")
 
 	var newEvents []events.Event
@@ -75,7 +77,7 @@ func (form *Form) wasAlreadyActive(tracker *rasa.Tracker) bool {
 
 func (form *Form) activate(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
-	log.WithField("name", form.FormName).Debug("Activating form.")
+	log.WithField(logging.FormNameKey, form.FormName).Debug("Activating form.")
 
 	return append([]events.Event{&events.Form{Name: form.Name()}},
 		form.candidatesFromExisting(tracker, domain, dispatcher)...)
@@ -159,7 +161,7 @@ func (form *Form) validatedSlots(candidates []events.SlotSet, domain *rasa.Domai
 
 			slots = append(slots, events.SlotSet{Name: candidate.Name, Value: validated})
 		} else {
-			log.WithFields(log.Fields{"name": form.FormName, "slot": candidate.Name}).Debug(
+			log.WithFields(log.Fields{logging.FormNameKey: form.FormName, logging.FormValidatedSlotKey: candidate.Name}).Debug(
 				"Slot validation failed")
 			tracker.Slots[candidate.Name] = nil
 			slots = append(slots, events.SlotSet{Name: candidate.Name, Value: nil})
@@ -193,7 +195,7 @@ func (form *Form) nextSlotToRequest(tracker *rasa.Tracker) (string, bool) {
 
 func (form *Form) deactivate(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
-	log.WithField("name", form.FormName).Debug("Deactivating form.")
+	log.WithField(logging.FormNameKey, form.FormName).Debug("Deactivating form.")
 
 	return append(
 		form.submit(tracker, domain, dispatcher),

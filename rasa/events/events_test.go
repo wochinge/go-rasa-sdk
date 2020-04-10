@@ -1,6 +1,8 @@
 package events
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -23,6 +25,25 @@ func TestEventType(t *testing.T) {
 		assert.Len(t, events, 1)
 		assert.Equal(t, eventType, event.EventType())
 	}
+}
+
+func TestParseUnknownEvent(t *testing.T) {
+	unknownType := "never seen this before"
+	unknownEvent := json.RawMessage([]byte(fmt.Sprintf(`{"event": "%s"}`, unknownType)))
+
+	events, err := Parsed([]json.RawMessage{unknownEvent})
+
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []Event{&Base{Type: unknown}}, events)
+	assert.Equal(t, unknown, events[0].EventType())
+}
+
+func TestParseBasedOnyTypeKeyError(t *testing.T) {
+	eventWithUnexpectedFormat := json.RawMessage([]byte(`{"event": "action", "policy": 2}`))
+	events, err := Parsed([]json.RawMessage{eventWithUnexpectedFormat})
+
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, []Event{&Base{Type: action}}, events)
 }
 
 func TestParsedDataEntityFor(t *testing.T) {
