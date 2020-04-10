@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestHealth(t *testing.T) {
@@ -30,15 +31,18 @@ func TestHealth(t *testing.T) {
 	assert.Equal(t, `{"status":"ok"}`, response.Body.String())
 }
 
-type TestAction struct{}
+type TestAction struct {
+	name string
+}
 
 func (action *TestAction) Run(_ *rasa.Tracker, _ *rasa.Domain, _ responses.ResponseDispatcher) []events.Event {
 	return []events.Event{&events.Restarted{}}
 }
-func (action *TestAction) Name() string { return "test-action" }
+func (action *TestAction) Name() string { return action.name }
 
 func TestRunAction(t *testing.T) {
-	body := []byte(`{"next_action": "test-action"}`)
+	actionName := "test-action"
+	body := []byte(fmt.Sprintf(`{"next_action": "%s"}`, actionName))
 	request, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer(body))
 
 	if err != nil {
@@ -46,7 +50,7 @@ func TestRunAction(t *testing.T) {
 	}
 
 	response := httptest.NewRecorder()
-	handler := GetRouter(&TestAction{})
+	handler := GetRouter(&TestAction{name: actionName})
 
 	handler.ServeHTTP(response, request)
 
@@ -148,4 +152,19 @@ func TestTearDownError(t *testing.T) {
 	tearDown(errors.New("fake error"))
 
 	assert.Equal(t, 1, len(hook.AllEntries()))
+}
+
+func TestServe(t *testing.T) {
+	actionNames := []string{"actionOne", "actionTwo"}
+	hook := test.NewGlobal()
+
+	go Serve(5005, &TestAction{name: actionNames[0]}, &TestAction{name: actionNames[1]})
+	// Wait a bit to make sure that things were correctly logged
+	time.Sleep(1 * time.Second)
+
+	assert.Equal(t, 2, len(hook.AllEntries()))
+
+	for _, name := range actionNames {
+		assert.Contains(t, hook.Entries[0].Message, name)
+	}
 }
