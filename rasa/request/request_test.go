@@ -1,15 +1,16 @@
 package request
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
 )
 
 func TestParsedMinimalRequest(t *testing.T) {

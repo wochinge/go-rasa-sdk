@@ -3,6 +3,7 @@ package forms
 
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa"
@@ -208,7 +209,7 @@ func requestSlot(slotName string, dispatcher responses.ResponseDispatcher) []eve
 
 	templateNameForSlotRequest := fmt.Sprintf("utter_ask_%s", slotName)
 
-	dispatcher.Utter(responses.Message{Template: templateNameForSlotRequest})
+	dispatcher.Utter(&responses.Message{Template: templateNameForSlotRequest})
 
 	return []events.Event{&events.SlotSet{Name: requestedSlot, Value: slotName}}
 }

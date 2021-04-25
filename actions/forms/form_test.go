@@ -2,11 +2,12 @@ package forms
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
-	"testing"
 )
 
 const testFormName = "test-form"
@@ -239,6 +240,6 @@ func TestRequestNextSlot(t *testing.T) {
 		&events.SlotSet{Name: requestedSlot, Value: requiredSlot}}
 	assert.ElementsMatch(t, expected, newEvents)
 
-	expectedResponses := []responses.Message{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
+	expectedResponses := []*responses.Message{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }

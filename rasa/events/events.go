@@ -4,6 +4,7 @@ package events
 
 import (
 	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
@@ -200,7 +201,7 @@ type ParseData struct {
 }
 
 // EntityFor returns the entity for a given entity name. Returns `nil` in case no entity with this name was found.
-func (data ParseData) EntityFor(name string) (interface{}, bool) {
+func (data *ParseData) EntityFor(name string) (interface{}, bool) {
 	for _, entity := range data.Entities {
 		if entity.Name == name {
 			return entity.Value, true
