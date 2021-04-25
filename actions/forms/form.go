@@ -209,7 +209,7 @@ func requestSlot(slotName string, dispatcher responses.ResponseDispatcher) []eve
 
 	templateNameForSlotRequest := fmt.Sprintf("utter_ask_%s", slotName)
 
-	dispatcher.Utter(responses.Message{Template: templateNameForSlotRequest})
+	dispatcher.Utter(&responses.Message{Template: templateNameForSlotRequest})
 
 	return []events.Event{&events.SlotSet{Name: requestedSlot, Value: slotName}}
 }

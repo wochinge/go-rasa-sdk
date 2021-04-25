@@ -100,7 +100,7 @@ func runAction(availableActions []actions.Action) func(http.ResponseWriter, *htt
 			return
 		}
 
-		responseBody, err := actions.ExecuteAction(actionRequest, availableActions)
+		responseBody, err := actions.ExecuteAction(&actionRequest, availableActions)
 
 		if err == nil {
 			sendJSONResponse(w, responseBody, http.StatusOK)

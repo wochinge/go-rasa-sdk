@@ -34,7 +34,7 @@ func (e *ExecutionRejectedError) Error() string {
 }
 
 // ExecuteAction executes the custom action which was requested by Rasa Open Source.
-func ExecuteAction(actionRequest request.CustomActionRequest,
+func ExecuteAction(actionRequest *request.CustomActionRequest,
 	availableActions []Action) (map[string]interface{}, error) {
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 

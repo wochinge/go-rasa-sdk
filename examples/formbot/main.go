@@ -3,13 +3,14 @@
 package main
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/wochinge/go-rasa-sdk/actions/forms"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"github.com/wochinge/go-rasa-sdk/server"
-	"strconv"
-	"strings"
 )
 
 // CuisineValidator validates if the provided cuisine type is a valid choice.
@@ -30,7 +31,7 @@ func (v *CuisineValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tr
 		}
 	}
 
-	dispatcher.Utter(responses.Message{Template: "utter_wrong_cuisine"})
+	dispatcher.Utter(&responses.Message{Template: "utter_wrong_cuisine"})
 
 	return nil, false
 }
@@ -55,7 +56,7 @@ func (v *NumPeopleValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.
 	}
 
 	if people < 1 {
-		dispatcher.Utter(responses.Message{Template: "utter_wrong_num_people"})
+		dispatcher.Utter(&responses.Message{Template: "utter_wrong_num_people"})
 		return nil, false
 	}
 
@@ -79,7 +80,7 @@ func (v *OutdoorSeatingValidator) IsValid(value interface{}, _ *rasa.Domain, _ *
 		}
 	}
 
-	dispatcher.Utter(responses.Message{Template: "utter_wrong_outdoor_seating"})
+	dispatcher.Utter(&responses.Message{Template: "utter_wrong_outdoor_seating"})
 	return nil, false
 }
 
@@ -106,7 +107,7 @@ func main() {
 			"outdoor_seating": {&OutdoorSeatingValidator{}},
 		},
 		OnSubmit: func(_ *rasa.Tracker, _ *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
-			dispatcher.Utter(responses.Message{Template: "utter_submit"})
+			dispatcher.Utter(&responses.Message{Template: "utter_submit"})
 			return []events.Event{}
 		},
 	}

@@ -32,7 +32,7 @@ type ActionDispatchingResponses struct{}
 func (action *ActionDispatchingResponses) Run(_ *rasa.Tracker, _ *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
 	message := responses.Message{Text: "Hello World"}
-	dispatcher.Utter(message)
+	dispatcher.Utter(&message)
 
 	return []events.Event{}
 }
@@ -44,7 +44,7 @@ func TestActionDispatchingResponses(t *testing.T) {
 	dispatcher := responses.NewDispatcher()
 	action.Run(&rasa.Tracker{}, &rasa.Domain{}, dispatcher)
 
-	expectedResponses := []responses.Message{{Text: "Hello World"}}
+	expectedResponses := []*responses.Message{{Text: "Hello World"}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }
 
@@ -60,8 +60,8 @@ func TestActionResponseEmpty(t *testing.T) {
 
 func TestActionResponseWithMultipleResponses(t *testing.T) {
 	dispatcher := responses.NewDispatcher()
-	dispatcher.Utter(responses.Message{Text: "hi"})
-	dispatcher.Utter(responses.Message{Template: "utter_ask"})
+	dispatcher.Utter(&responses.Message{Text: "hi"})
+	dispatcher.Utter(&responses.Message{Template: "utter_ask"})
 
 	response := actionResponse([]events.Event{}, dispatcher)
 	actualAsJSON, err := json.Marshal(response)
@@ -95,7 +95,7 @@ func (action *RejectingAction) Name() string { return "test-reject" }
 func TestActionRejectingExecution(t *testing.T) {
 	actionRequest := request.CustomActionRequest{ActionToRun: "test-reject"}
 
-	_, err := ExecuteAction(actionRequest, []Action{&RejectingAction{}})
+	_, err := ExecuteAction(&actionRequest, []Action{&RejectingAction{}})
 
 	assert.IsType(t, &ExecutionRejectedError{}, err)
 }

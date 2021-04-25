@@ -22,8 +22,6 @@ func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 		return parsedRequest, err
 	}
 
-	// parsedRequest.Domain = rasa.sanitizeDomain(parsedRequest.Domain)
-
 	if parsedRequest.Tracker.RawEvents == nil {
 		parsedRequest.Tracker.Events = []events.Event{}
 		return parsedRequest, nil

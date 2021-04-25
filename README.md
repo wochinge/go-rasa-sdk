@@ -59,7 +59,7 @@ func (action *GreetAction) Run(
     // Your action code goes here.
     
     // Dispatching the message.
-    dispatcher.Utter(responses.Message{Text: "Hello"})
+    dispatcher.Utter(&responses.Message{Text: "Hello"})
     
     // See all possible events to return in github.com/wochinge/go-rasa-sdk/rasa/events .
     return []events.Event{&events.SlotSet{Name: "user_was_greeted", Value: true}}

@@ -25,7 +25,7 @@ func defaultSlotMapping(slotName string) []SlotMapping {
 	return []SlotMapping{{FromEntity: slotName}}
 }
 
-func (mapping SlotMapping) apply(form *Form, tracker *rasa.Tracker) (interface{}, bool) {
+func (mapping *SlotMapping) apply(form *Form, tracker *rasa.Tracker) (interface{}, bool) {
 	latestMessage := &tracker.LatestMessage
 	if !mapping.allows(latestMessage.Intent.Name) || (mapping.ApplyToFirstRunOnly && form.wasAlreadyActive(tracker)) {
 		return nil, false
@@ -46,7 +46,7 @@ func (mapping SlotMapping) apply(form *Form, tracker *rasa.Tracker) (interface{}
 	return nil, false
 }
 
-func (mapping SlotMapping) allows(intentName string) bool {
+func (mapping *SlotMapping) allows(intentName string) bool {
 	if mapping.Intents == nil && mapping.ExcludedIntents == nil {
 		return true
 	}
