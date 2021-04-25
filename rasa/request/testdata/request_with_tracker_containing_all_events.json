@@ -104,7 +104,11 @@
         "event": "resume",
         "timestamp": 99.1
       },
-
+      {
+        "event": "active_loop",
+        "timestamp": 1556550828.3499741554,
+        "name": null
+      },
       {
         "event": "form",
         "timestamp": 1556550828.3499741554,

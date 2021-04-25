@@ -118,7 +118,7 @@ func TestMappingOnlyFirstRunIfNotFirstRun(t *testing.T) {
 
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: "dasdas", Value: "Dasds"}},
 		Intent: events.IntentParseResult{Name: intentName}, Text: text}
-	tracker := rasa.Tracker{LatestMessage: lastMessage, ActiveForm: rasa.ActiveForm{Name: formName}}
+	tracker := rasa.Tracker{LatestMessage: lastMessage, ActiveLoop: rasa.ActiveLoop{Name: formName}}
 
 	mapping := SlotMapping{FromText: true, ApplyToFirstRunOnly: true}
 	_, found := mapping.apply(&Form{FormName: formName}, &tracker)
