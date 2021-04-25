@@ -61,8 +61,8 @@ func ExecuteAction(actionRequest *request.CustomActionRequest,
 	return actionResponse(newEvents, dispatcher), nil
 }
 
-func actionFor(name string, actions []Action) Action {
-	for _, action := range actions {
+func actionFor(name string, customActions []Action) Action {
+	for _, action := range customActions {
 		if action.Name() == name {
 			return action
 		}

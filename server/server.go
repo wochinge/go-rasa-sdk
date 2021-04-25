@@ -36,9 +36,9 @@ func Serve(port int, customActions ...actions.Action) {
 	tearDown(err)
 }
 
-func setup(actions []actions.Action) {
+func setup(customActions []actions.Action) {
 	log.SetLevel(log.InfoLevel)
-	logAvailableActions(actions)
+	logAvailableActions(customActions)
 }
 
 func address(port int) string {
@@ -52,9 +52,9 @@ func tearDown(err error) {
 	}
 }
 
-func logAvailableActions(actions []actions.Action) {
+func logAvailableActions(customActions []actions.Action) {
 	var actionNames []string
-	for _, action := range actions {
+	for _, action := range customActions {
 		actionNames = append(actionNames, action.Name())
 	}
 
@@ -65,10 +65,10 @@ func logAvailableActions(actions []actions.Action) {
 // By default this is the `health` endpoint which can be used for health checks and
 // the `/webhook` endpoint which Rasa Open Source calls to execute a custom action.
 // There should only be a need to call this if you want to add custom endpoints.
-func GetRouter(actions ...actions.Action) http.Handler {
+func GetRouter(customActions ...actions.Action) http.Handler {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/health", health).Methods("GET", "OPTIONS")
-	router.HandleFunc("/webhook", runAction(actions)).Methods("POST")
+	router.HandleFunc("/webhook", runAction(customActions)).Methods("POST")
 
 	return router
 }
