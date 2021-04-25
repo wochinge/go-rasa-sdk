@@ -44,7 +44,7 @@ func (action *FormValidationAction) Run(tracker *rasa.Tracker, domain *rasa.Doma
 	}
 
 	slotsToValidate := tracker.SlotsToValidate()
-	for slotName, slotValue := range *slotsToValidate {
+	for slotName, slotValue := range slotsToValidate {
 		if validator, ok := action.Validators[slotName]; ok {
 			if validatedValue, isValid := validator.IsValid(slotValue, domain, tracker, dispatcher); isValid {
 				newEvents = append(newEvents, &events.SlotSet{Name: slotName, Value: validatedValue})

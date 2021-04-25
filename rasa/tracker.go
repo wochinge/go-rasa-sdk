@@ -45,7 +45,6 @@ type ActiveLoop struct {
 	TriggerMessage events.ParseData `json:"trigger_message"`
 }
 
-
 // NoFormValidation checks if the form should validate candidates before filling the slots.
 func (tracker *Tracker) NoFormValidation() bool {
 	return !tracker.ActiveLoop.Validate || tracker.LatestActionName != "action_listen"
@@ -66,20 +65,19 @@ func (tracker *Tracker) Init() *Tracker {
 	return tracker
 }
 
-func (tracker *Tracker) SlotsToValidate() *map[string]interface{} {
+func (tracker *Tracker) SlotsToValidate() map[string]interface{} {
 	candidates := make(map[string]interface{})
 
-
-	for i := len(tracker.Events) - 1 ; i >= 0; i-- {
+	for i := len(tracker.Events) - 1; i >= 0; i-- {
 		event := tracker.Events[i]
 		slotEvent, ok := event.(*events.SlotSet)
+
 		if ok {
 			candidates[slotEvent.Name] = slotEvent.Value
 		} else {
 			break
-
 		}
 	}
-	return &candidates
-}
 
+	return candidates
+}

@@ -10,15 +10,15 @@ import (
 func TestSlotsToValidate(t *testing.T) {
 	tracker := Tracker{Events: []events.Event{
 		&events.SlotSet{Name: "not_a_candidate", Value: "some value"},
-		&events.Action{Name:"my_form"},
+		&events.Action{Name: "my_form"},
 		&events.SlotSet{Name: "candidate", Value: "interesting value"},
-		&events.SlotSet{Name:"candidate_two", Value: "interesting value2"},
+		&events.SlotSet{Name: "candidate_two", Value: "interesting value2"},
 	}}
 
 	slotCandidates := tracker.SlotsToValidate()
 
 	expectedCandidates := map[string]interface{}{
-		"candidate": "interesting value",
+		"candidate":     "interesting value",
 		"candidate_two": "interesting value2",
 	}
 	assert.Equal(t, &expectedCandidates, slotCandidates)
@@ -27,7 +27,7 @@ func TestSlotsToValidate(t *testing.T) {
 func TestSlotsToValidateWithNoCandidates(t *testing.T) {
 	tracker := Tracker{Events: []events.Event{
 		&events.SlotSet{Name: "not_a_candidate", Value: "some value"},
-		&events.Action{Name:"my_form"},
+		&events.Action{Name: "my_form"},
 	}}
 
 	slotCandidates := tracker.SlotsToValidate()

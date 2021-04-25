@@ -52,7 +52,6 @@ func TestFormValidSlot(t *testing.T) {
 	assert.ElementsMatch(t, expected, newEvents)
 }
 
-
 func TestFormInValidSlot(t *testing.T) {
 	slotName := "color"
 	validators := map[string]SlotValidator{slotName: &ExactMatchValidator{
@@ -92,6 +91,7 @@ func (v *EntityExtractor) Extract(_ *rasa.Domain, tracker *rasa.Tracker,
 			return entity.Value, true
 		}
 	}
+
 	return nil, false
 }
 
@@ -142,7 +142,6 @@ func TestExtractCustomSlotIfNotFound(t *testing.T) {
 
 	assert.Empty(t, newEvents)
 }
-
 
 func TestExtractCustomSlotAndValidate(t *testing.T) {
 	slotName := "color"
