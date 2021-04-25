@@ -28,10 +28,10 @@ type errorResponse struct {
 
 // Serve runs the action server on the provided port.
 // Supplied actions will be executed upon request from Rasa Open Source.
-func Serve(port int, actions ...actions.Action) {
-	setup(actions)
+func Serve(port int, customActions ...actions.Action) {
+	setup(customActions)
 
-	err := http.ListenAndServe(address(port), GetRouter(actions...))
+	err := http.ListenAndServe(address(port), GetRouter(customActions...))
 
 	tearDown(err)
 }
