@@ -1,6 +1,6 @@
 # go-rasa-sdk
-![Build Status](https://github.com/wochinge/go-rasa-sdk/workflows/Lint%20and%20Test/badge.svg?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/wochinge/go-rasa-sdk/badge.svg?branch=master)](https://coveralls.io/github/wochinge/go-rasa-sdk?branch=master)
+![Build Status](https://github.com/wochinge/go-rasa-sdk/workflows/Lint%20and%20Test/badge.svg?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/wochinge/go-rasa-sdk/badge.svg?branch=master)](https://coveralls.io/github/wochinge/go-rasa-sdk?branch=main)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/wochinge/go-rasa-sdk?tab=doc)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/wochinge/go-rasa-sdk)
 
