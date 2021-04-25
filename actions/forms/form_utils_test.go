@@ -219,3 +219,28 @@ func TestRequestNextSlot(t *testing.T) {
 	}
 	assert.ElementsMatch(t, expected, newEvents)
 }
+
+
+func TestRequestNoNextSlot(t *testing.T) {
+	slotName := "color"
+
+	validators, extractors := make(map[string]SlotValidator), make(map[string]SlotExtractor)
+	formName := "test_form"
+	formValidator := FormValidationAction{
+		formName, validators, extractors, &ConstantSlotRequester{nil},
+	}
+	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
+		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
+		Events: []events.Event{
+			&events.SlotSet{Name: "bla", Value: 5},
+			&events.Action{Name: formName},
+		}}
+	tracker.LatestMessage.Entities = []events.Entity{{Name: slotName, Value: "green"}}
+
+	newEvents := formValidator.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
+
+	expected := []events.Event{
+		&events.SlotSet{Name: requestedSlot, Value: nil},
+	}
+	assert.ElementsMatch(t, expected, newEvents)
+}
