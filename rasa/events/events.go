@@ -23,7 +23,9 @@ const (
 	conversationPaused  Type = "pause"
 	conversationResumed Type = "resume"
 
+	activeLoop              Type = "active_loop"
 	form                    Type = "form"
+	loopInterrupted         Type = "loop_interrupted"
 	formValidation          Type = "form_validation"
 	actionExecutionRejected Type = "action_execution_rejected"
 
@@ -88,7 +90,9 @@ func eventParser(base Base) (func() Event, bool) {
 		conversationPaused:  func() Event { return &ConversationPaused{Base: base} },
 		conversationResumed: func() Event { return &ConversationResumed{Base: base} },
 
+		activeLoop:              func() Event { return &ActiveLoop{Base: base} },
 		form:                    func() Event { return &Form{Base: base} },
+		loopInterrupted:         func() Event { return &LoopInterrupted{Base: base} },
 		formValidation:          func() Event { return &FormValidation{Base: base} },
 		actionExecutionRejected: func() Event { return &ActionExecutionRejected{Action: Action{Base: base}} },
 
@@ -166,7 +170,7 @@ type Action struct {
 func (*Action) EventType() Type { return action }
 
 // SessionStarted represents that a new conversation session
-// (https://rasa.com/docs/rasa/core/domains/#session-configuration) was started.
+// (https://rasa.com/docs/rasa/domain/#session-configuration) was started.
 type SessionStarted struct {
 	Base
 }
@@ -315,7 +319,17 @@ type AllSlotsReset struct {
 
 func (*AllSlotsReset) EventType() Type { return allSlotsReset }
 
-// Form is an event which states that a form (https://rasa.com/docs/rasa/core/forms/) was activated or deactivated.
+// ActiveLoop is an event which states that a loop / form form (https://rasa.com/docs/rasa/forms/) is active.
+type ActiveLoop struct {
+	Base
+	// Name of the form if activated. Empty if the currently active form was deactivated.
+	Name string `json:"name,omitempty"`
+}
+
+func (*ActiveLoop) EventType() Type { return activeLoop }
+
+// Form is an event which states that a form (https://rasa.com/docs/rasa/forms/) was activated or deactivated.
+// Deprecated: Please use `ActiveLoop` instead.
 type Form struct {
 	Base
 	// Name of the form if activated. Empty if the currently active form was deactivated.
@@ -324,7 +338,18 @@ type Form struct {
 
 func (*Form) EventType() Type { return form }
 
+// LoopInterrupted notifies form action whether or not to validate the user input.
+type LoopInterrupted struct {
+	Base
+	// isInterrupted is `True` if the loop execution was interrupted, and ML policies had to take over the last
+	// prediction.
+	IsInterrupted bool `json:"is_interrupted"`
+}
+
+func (*LoopInterrupted) EventType() Type { return loopInterrupted }
+
 // FormValidation instructs the form to validate or not.
+// Deprecated: Please use `LoopInterrupted` instead.
 type FormValidation struct {
 	Base
 	// Validate if potential slot candidates. If `false` don't validate slot candidates..

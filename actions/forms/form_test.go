@@ -24,7 +24,7 @@ func (v *ExactMatchValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa
 func TestActivateFormIfActive(t *testing.T) {
 	nextSlot, value := "next slot", "bla"
 
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
+	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nextSlot}}
 	tracker.LatestMessage.Entities = []events.Entity{{Name: nextSlot, Value: value}}
 
@@ -61,7 +61,7 @@ func TestActivateValidateExistingSlots(t *testing.T) {
 	requiredSlots := []string{slot1, slot2}
 	currentlyFilledSLots := map[string]interface{}{slot1: toMatch, slot2: "tada"}
 
-	tracker := &rasa.Tracker{Slots: currentlyFilledSLots, ActiveForm: rasa.ActiveForm{Validate: true},
+	tracker := &rasa.Tracker{Slots: currentlyFilledSLots, ActiveLoop: rasa.ActiveLoop{Validate: true},
 		LatestActionName: "action_listen"}
 
 	validator := &ExactMatchValidator{toMatch: toMatch}
@@ -102,7 +102,7 @@ func TestFillSlots(t *testing.T) {
 	// Prepare tracker
 	name, value := "my entity", "test"
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: name, Value: value}}}
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
+	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		LatestMessage: lastMessage,
 		Slots:         map[string]interface{}{requestedSlot: slotName}}
 
@@ -126,7 +126,7 @@ func TestFillSlotWithoutMapping(t *testing.T) {
 	// Prepare tracker
 	entityValue := "test"
 	lastMessage := events.ParseData{Entities: []events.Entity{{Name: slotName, Value: entityValue}}}
-	tracker := rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: testFormName},
+	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		LatestMessage: lastMessage,
 		Slots:         map[string]interface{}{requestedSlot: slotName}}
 
@@ -185,7 +185,7 @@ func TestValidationDisabled(t *testing.T) {
 	validSlot, validValue, invalidSlot, invalidValue := "valid", "valid value", "invalid", "invalid value"
 	toMatch := validValue
 
-	tracker := &rasa.Tracker{ActiveForm: rasa.ActiveForm{Validate: false}, Slots: map[string]interface{}{}}
+	tracker := &rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Validate: false}, Slots: map[string]interface{}{}}
 
 	form := Form{Validators: map[string][]SlotValidator{invalidSlot: {&ExactMatchValidator{}},
 		validSlot: {&ExactMatchValidator{toMatch: toMatch}}}}
@@ -205,7 +205,7 @@ func TestSubmit(t *testing.T) {
 	requiredSlot, value := "age", "bla"
 	form := Form{FormName: testFormName, OnSubmit: onSubmit, RequiredSlots: []string{requiredSlot}}
 
-	tracker := &rasa.Tracker{ActiveForm: rasa.ActiveForm{Name: form.FormName},
+	tracker := &rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: form.FormName},
 		Slots: map[string]interface{}{requestedSlot: requiredSlot}}
 	tracker.LatestMessage.Entities = []events.Entity{{Name: requiredSlot, Value: value}}
 

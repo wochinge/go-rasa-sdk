@@ -36,7 +36,7 @@ func (form *Form) Run(tracker *rasa.Tracker, domain *rasa.Domain,
 	dispatcher responses.ResponseDispatcher) []events.Event {
 	tracker.Init()
 	log.WithFields(
-		log.Fields{logging.FormNameKey: form.FormName, logging.FormValidationKey: tracker.ActiveForm.Validate}).Debug(
+		log.Fields{logging.FormNameKey: form.FormName, logging.FormValidationKey: tracker.ActiveLoop.Validate}).Debug(
 		"Running form.")
 
 	var newEvents []events.Event
@@ -73,7 +73,7 @@ func (form *Form) newSlotEvents(tracker *rasa.Tracker, domain *rasa.Domain,
 }
 
 func (form *Form) wasAlreadyActive(tracker *rasa.Tracker) bool {
-	return tracker.ActiveForm.Name == form.Name()
+	return tracker.ActiveLoop.Name == form.Name()
 }
 
 func (form *Form) activate(tracker *rasa.Tracker, domain *rasa.Domain,
