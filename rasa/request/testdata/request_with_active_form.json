@@ -3,7 +3,7 @@
   "tracker": {
     "active_loop": {
       "name": "my-form",
-      "validate": true,
+      "is_interrupted": true,
       "rejected": false,
       "trigger_message": {}
     }

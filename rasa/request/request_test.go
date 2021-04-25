@@ -164,6 +164,7 @@ func TestParseTrackerEvents(t *testing.T) {
 		&events.ConversationResumed{Base: events.Base{Type: "resume", Timestamp: 99.1}},
 		&events.ActiveLoop{Base: events.Base{Type: "active_loop", Timestamp: 1556550828.3499741554}},
 		&events.Form{Base: events.Base{Type: "form", Timestamp: 1556550828.3499741554}},
+		&events.LoopInterrupted{Base: events.Base{Type: "loop_interrupted", Timestamp: 12345}, IsInterrupted: true},
 		&events.FormValidation{Base: events.Base{Type: "form_validation", Timestamp: 12345}, Validate: false},
 		&events.FollowUpAction{Base: events.Base{Type: "followup", Timestamp: 99.1}, Name: "next action"},
 		&events.StoryExported{Base: events.Base{Type: "export", Timestamp: 99.1}},
