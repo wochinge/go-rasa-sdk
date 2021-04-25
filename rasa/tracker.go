@@ -45,10 +45,6 @@ type ActiveLoop struct {
 	TriggerMessage events.ParseData `json:"trigger_message"`
 }
 
-// NoFormValidation checks if the form should validate candidates before filling the slots.
-func (tracker *Tracker) NoFormValidation() bool {
-	return !tracker.ActiveLoop.Validate || tracker.LatestActionName != "action_listen"
-}
 
 // EmptyTracker returns a new tracker with its default default values set.
 func EmptyTracker() *Tracker {
