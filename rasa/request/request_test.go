@@ -36,8 +36,22 @@ func TestParsedDomainActions(t *testing.T) {
 
 	domain := parsed.Domain
 
-	expectedForms := [3]string{"sales_form", "subscribe_newsletter_form", "suggestion_form"}
-	assert.ElementsMatch(t, domain.Forms, expectedForms)
+	expectedForms := map[string]interface{}{
+		"restaurant_form": map[string]interface{}{
+			"required_slots": map[string]interface{}{
+				"cuisine": []interface{}{
+					map[string]interface{}{"type": "from_entity", "entity": "cuisine"},
+				},
+			}},
+		"other_form": map[string]interface{}{
+			"num_people": []interface{}{
+				map[string]interface{}{"type": "from_entity", "entity": "number"},
+			},
+		},
+	}
+	for key, content := range expectedForms {
+		assert.Equal(t, domain.Forms[key], content)
+	}
 
 	expectedActions := []string{"action_chitchat",
 		"action_default_ask_affirmation",
@@ -156,6 +170,9 @@ func TestParseTrackerEvents(t *testing.T) {
 				IntentRanking: []events.IntentParseResult{{Name: "greet", Confidence: 0.9908843637},
 					{Name: "mood_deny", Confidence: 0.01}}, Text: "hello"},
 			MessageID: "c25928b830814f8180336745d9ad29f2", InputChannel: "rasa"},
+		&events.UserUtteredFeaturization{Base: events.Base{Type: "user_featurization", Timestamp: 1234}, UseTextForFeaturization: true},
+		&events.EntitiesAdded{Base: events.Base{Type: "entities", Timestamp: 1234}, Entities: []events.Entity{
+			{Start: 0, End: 13, Value: "Windows Linux", Name: "name", Confidence: 0.7906, Extractor: "ner_crf"}}},
 		&events.Bot{Base: events.Base{Type: "bot", Timestamp: 1234}, Text: "Peace",
 			Data: responses.Message{Elements: []interface{}{}, Buttons: []responses.Button{}, Attachment: nil}},
 		&events.SessionStarted{Base: events.Base{Type: "session_started", Timestamp: 1584966507.4802930355}},

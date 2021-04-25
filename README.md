@@ -6,7 +6,7 @@
 
 Go implementation of the [Rasa Python SDK](https://github.com/rasahq/rasa-sdk). 
 Use this SDK to implement [custom actions](https://rasa.com/docs/rasa/core/actions/#custom-actions) for 
-Rasa Open Source (>= 1.0).
+Rasa Open Source (>= 2.0). Version 1 of the `go-rasa-sdk` is compatible with Rasa Open Source 1.
 
 ## Installation
 
@@ -88,8 +88,8 @@ func main() {
 
 ### Implementing a Form
 The `go-rasa-sdk` also provides support for 
-[Rasa Open Source forms](https://rasa.com/docs/rasa/core/forms/). Implement a form using `Form` struct. To implement
-a form which fills an `age` slot:
+[Rasa Open Source forms](https://rasa.com/docs/rasa/forms/). Implement a form using the `FormValidationAction` struct. 
+To implement a form which fills an `age` slot:
 
 ```go
 import (
@@ -100,32 +100,15 @@ import (
 )
 
 func main() {
-    ageForm := forms.Form{
+    ageForm := forms.FormValidationAction{
         // the name of your form which should be specified in the `forms` section
         // in your `domain.yml`
         FormName: "age_form",
-
-        // Slots your form should fill.
-        RequiredSlots: []string{"age"},
-
-        // Defines how slots are filled
-        SlotMappings: map[string][]forms.SlotMapping{
-            // the age slot is filled by an entity with the name `number`.
-            "age": {{FromEntity: "number"}}},
-
+		FormName:      "restaurant_form",
         // Validators for slot candidates
         Validators: map[string][]forms.SlotValidator{
             // AgeValidator will validate that the age is not a negative number.
             "age": {&AgeValidator{}},
-        },
-
-        // OnSubmit is triggered when all required slots are filled.
-        OnSubmit: func(_ *rasa.Tracker,
-            _ *rasa.Domain,
-            dispatcher responses.ResponseDispatcher) []events.Event {
-            // We tell the user that the age was successfully provided
-            dispatcher.Utter(responses.Message{Template: "utter_age_provided"})
-            return []events.Event{}
         },
     }
 }

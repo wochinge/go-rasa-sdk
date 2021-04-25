@@ -8,7 +8,6 @@ import (
 
 	"github.com/wochinge/go-rasa-sdk/actions/forms"
 	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"github.com/wochinge/go-rasa-sdk/server"
 )
@@ -85,30 +84,12 @@ func (v *OutdoorSeatingValidator) IsValid(value interface{}, _ *rasa.Domain, _ *
 }
 
 func main() {
-	form := forms.Form{
-		FormName:      "restaurant_form",
-		RequiredSlots: []string{"cuisine", "num_people", "outdoor_seating", "preferences", "feedback"},
-		SlotMappings: map[string][]forms.SlotMapping{
-			"cuisine": {{FromEntity: "cuisine", ExcludedIntents: []string{"chitchat"}}},
-			"num_people": {
-				{FromEntity: "num_people", Intents: []string{"inform", "request_restaurant"}},
-				{FromEntity: "number"}},
-			"outdoor_seating": {
-				{FromEntity: "seating"},
-				{Intents: []string{"affirm"}, Value: true},
-				{Intents: []string{"deny"}, Value: false}},
-			"preferences": {
-				{Intents: []string{"deny"}, Value: "no additional preferences"},
-				{FromText: true, ExcludedIntents: []string{"affirm"}}},
-			"feedback": {{FromEntity: "feedback"}, {FromText: true}}},
-		Validators: map[string][]forms.SlotValidator{
-			"cuisine":         {&CuisineValidator{}},
-			"num_people":      {&NumPeopleValidator{}},
-			"outdoor_seating": {&OutdoorSeatingValidator{}},
-		},
-		OnSubmit: func(_ *rasa.Tracker, _ *rasa.Domain, dispatcher responses.ResponseDispatcher) []events.Event {
-			dispatcher.Utter(&responses.Message{Template: "utter_submit"})
-			return []events.Event{}
+	form := forms.FormValidationAction{
+		FormName: "restaurant_form",
+		Validators: map[string]forms.SlotValidator{
+			"cuisine":         &CuisineValidator{},
+			"num_people":      &NumPeopleValidator{},
+			"outdoor_seating": &OutdoorSeatingValidator{},
 		},
 	}
 
