@@ -14,11 +14,13 @@ import (
 type Type string
 
 const (
-	action         Type = "action"
-	user           Type = "user"
-	bot            Type = "bot"
-	sessionStarted Type = "session_started"
-	slotSet        Type = "slot"
+	action                   Type = "action"
+	user                     Type = "user"
+	userUtteredFeaturization Type = "user_featurization"
+	entities                 Type = "entities"
+	bot                      Type = "bot"
+	sessionStarted           Type = "session_started"
+	slotSet                  Type = "slot"
 
 	conversationPaused  Type = "pause"
 	conversationResumed Type = "resume"
@@ -81,11 +83,13 @@ func parseBasedOnyTypeKey(base Base, raw json.RawMessage) Event {
 
 func eventParser(base Base) (func() Event, bool) {
 	eventParsers := map[Type]func() Event{
-		action:         func() Event { return &Action{Base: base} },
-		user:           func() Event { return &User{Base: base} },
-		bot:            func() Event { return &Bot{Base: base} },
-		sessionStarted: func() Event { return &SessionStarted{Base: base} },
-		slotSet:        func() Event { return &SlotSet{Base: base} },
+		action:                   func() Event { return &Action{Base: base} },
+		user:                     func() Event { return &User{Base: base} },
+		userUtteredFeaturization: func() Event { return &UserUtteredFeaturization{Base: base} },
+		entities:                 func() Event { return &EntitiesAdded{Base: base} },
+		bot:                      func() Event { return &Bot{Base: base} },
+		sessionStarted:           func() Event { return &SessionStarted{Base: base} },
+		slotSet:                  func() Event { return &SlotSet{Base: base} },
 
 		conversationPaused:  func() Event { return &ConversationPaused{Base: base} },
 		conversationResumed: func() Event { return &ConversationResumed{Base: base} },
@@ -395,3 +399,22 @@ type ReminderCancelled struct {
 }
 
 func (*ReminderCancelled) EventType() Type { return reminderCancelled }
+
+// UserUtteredFeaturization stores whether the next action was predicted using the intent data or the
+// pure text of the user message. See https://rasa.com/docs/rasa/stories#end-to-end-training.
+type UserUtteredFeaturization struct {
+	Base
+	// Validate if potential slot candidates. If `false` don't validate slot candidates..
+	UseTextForFeaturization bool `json:"use_text_for_featurization"`
+}
+
+func (*UserUtteredFeaturization) EventType() Type { return userUtteredFeaturization }
+
+// EntitiesAdded stores entities predicted by policies. See https://rasa.com/docs/rasa/stories#end-to-end-training.
+type EntitiesAdded struct {
+	Base
+	// Entities which were part of the last user message.
+	Entities []Entity `json:"entities"`
+}
+
+func (*EntitiesAdded) EventType() Type { return entities }

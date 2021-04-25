@@ -38,9 +38,10 @@ type SlotExtractor interface {
 		dispatcher responses.ResponseDispatcher) (extractedValue interface{}, valueFound bool)
 }
 
-// NextSlotRequester can be used to TODO.
+// NextSlotRequester can be used to dynamically set which slot should be request next or if the form should be stopped.
 type NextSlotRequester interface {
-	// NextSlot be used to TODO.
+	// NextSlot returns the next slot which should be requested or `shouldRequestNextSlot=false` in case the form
+	// should be stopped.
 	NextSlot(domain *rasa.Domain, tracker *rasa.Tracker,
 		dispatcher responses.ResponseDispatcher) (nextSlot string, shouldRequestNextSlot bool)
 }
@@ -53,7 +54,7 @@ func (action *FormValidationAction) Run(tracker *rasa.Tracker, domain *rasa.Doma
 		log.Fields{logging.FormNameKey: action.FormName, logging.FormValidationKey: tracker.ActiveLoop.Validate}).Debug(
 		"Validating form.")
 
-	var newEvents []events.Event
+	newEvents := make([]events.Event, 0)
 
 	for slotName, extractor := range action.Extractors {
 		if extractedValue, valueFound := extractor.Extract(domain, tracker, dispatcher); valueFound {

@@ -85,7 +85,7 @@ func (v *OutdoorSeatingValidator) IsValid(value interface{}, _ *rasa.Domain, _ *
 
 func main() {
 	form := forms.FormValidationAction{
-		FormName:      "restaurant_form",
+		FormName: "restaurant_form",
 		Validators: map[string]forms.SlotValidator{
 			"cuisine":         &CuisineValidator{},
 			"num_people":      &NumPeopleValidator{},

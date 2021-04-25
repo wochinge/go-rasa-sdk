@@ -11,7 +11,8 @@ import (
 func TestEventType(t *testing.T) {
 	types := []Type{action, sessionStarted, user, bot, userUtteranceReverted, actionReverted, restarted,
 		storyExported, followUpAction, conversationPaused, conversationResumed, slotSet, allSlotsReset, activeLoop,
-		form, loopInterrupted, formValidation, actionExecutionRejected, reminderScheduled, reminderCancelled}
+		form, loopInterrupted, formValidation, actionExecutionRejected, reminderScheduled, reminderCancelled,
+		userUtteredFeaturization, entities}
 
 	for _, eventType := range types {
 		eventCreator, found := eventParser(Base{Type: eventType})

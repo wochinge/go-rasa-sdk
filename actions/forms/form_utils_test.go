@@ -32,6 +32,7 @@ func TestFormRun(t *testing.T) {
 	newEvents := formValidator.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
 
 	assert.Empty(t, newEvents)
+	assert.NotNil(t, newEvents)
 	assert.Equal(t, "validate_test_form", formValidator.Name())
 }
 
