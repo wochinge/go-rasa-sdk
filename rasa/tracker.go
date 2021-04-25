@@ -33,6 +33,19 @@ type Tracker struct {
 	LatestInputChannel string `json:"latest_input_channel"`
 }
 
+// ActiveLoop describes a potentially active form.
+type ActiveLoop struct {
+	// Name of the currently active form.
+	Name string `json:"name"`
+	// Validate is `true` if the slot candidates should be validated before filling the slot.
+	Validate bool `json:"validate"`
+	// Rejected specifies if the form rejected its execution.
+	Rejected bool `json:"rejected"`
+	// TriggerMessage is the first message which started the form.
+	TriggerMessage events.ParseData `json:"trigger_message"`
+}
+
+
 // NoFormValidation checks if the form should validate candidates before filling the slots.
 func (tracker *Tracker) NoFormValidation() bool {
 	return !tracker.ActiveLoop.Validate || tracker.LatestActionName != "action_listen"
@@ -53,14 +66,20 @@ func (tracker *Tracker) Init() *Tracker {
 	return tracker
 }
 
-// ActiveLoop describes a potentially active form.
-type ActiveLoop struct {
-	// Name of the currently active form.
-	Name string `json:"name"`
-	// Validate is `true` if the slot candidates should be validated before filling the slot.
-	Validate bool `json:"validate"`
-	// Rejected specifies if the form rejected its execution.
-	Rejected bool `json:"rejected"`
-	// TriggerMessage is the first message which started the form.
-	TriggerMessage events.ParseData `json:"trigger_message"`
+func (tracker *Tracker) SlotsToValidate() *map[string]interface{} {
+	candidates := make(map[string]interface{})
+
+
+	for i := len(tracker.Events) - 1 ; i >= 0; i-- {
+		event := tracker.Events[i]
+		slotEvent, ok := event.(*events.SlotSet)
+		if ok {
+			candidates[slotEvent.Name] = slotEvent.Value
+		} else {
+			break
+
+		}
+	}
+	return &candidates
 }
+
