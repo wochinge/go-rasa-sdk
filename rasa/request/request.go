@@ -4,9 +4,10 @@ package request
 
 import (
 	"encoding/json"
+	"io"
+
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"io"
 )
 
 // Parsed parses the payload which is sent to us from Rasa Open Source upon a request to execute a custom action.

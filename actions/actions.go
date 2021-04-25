@@ -3,6 +3,7 @@ package actions
 
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa"

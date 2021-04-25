@@ -4,10 +4,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/actions"
 	"github.com/wochinge/go-rasa-sdk/rasa/request"
-	"net/http"
 
 	"github.com/gorilla/mux"
 )

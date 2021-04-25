@@ -2,12 +2,13 @@ package actions
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 	"github.com/wochinge/go-rasa-sdk/rasa/request"
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
-	"testing"
 )
 
 type SimpleTestAction struct{}

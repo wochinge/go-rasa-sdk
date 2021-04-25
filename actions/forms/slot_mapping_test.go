@@ -1,10 +1,11 @@
 package forms
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"testing"
 )
 
 const (

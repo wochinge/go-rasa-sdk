@@ -2,6 +2,7 @@ package rasa
 
 import (
 	"encoding/json"
+
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
 )
 
