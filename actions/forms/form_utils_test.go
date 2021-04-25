@@ -220,7 +220,6 @@ func TestRequestNextSlot(t *testing.T) {
 	assert.ElementsMatch(t, expected, newEvents)
 }
 
-
 func TestRequestNoNextSlot(t *testing.T) {
 	slotName := "color"
 

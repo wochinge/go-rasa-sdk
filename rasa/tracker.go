@@ -45,7 +45,6 @@ type ActiveLoop struct {
 	TriggerMessage events.ParseData `json:"trigger_message"`
 }
 
-
 // EmptyTracker returns a new tracker with its default default values set.
 func EmptyTracker() *Tracker {
 	tracker := &Tracker{ActiveLoop: ActiveLoop{Validate: true}}
