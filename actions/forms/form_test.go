@@ -240,6 +240,6 @@ func TestRequestNextSlot(t *testing.T) {
 		&events.SlotSet{Name: requestedSlot, Value: requiredSlot}}
 	assert.ElementsMatch(t, expected, newEvents)
 
-	expectedResponses := []responses.Message{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
+	expectedResponses := []*responses.Message{{Template: fmt.Sprintf("utter_ask_%s", requiredSlot)}}
 	assert.ElementsMatch(t, expectedResponses, dispatcher.Responses())
 }
