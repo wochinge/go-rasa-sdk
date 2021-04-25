@@ -16,7 +16,14 @@ type FormValidationAction struct {
 	// Validators specify functions to validate slot candidates.
 	Validators map[string]SlotValidator
 	// Extractors specify functions to extract slot candidates.
-	Extractors map[string]SlotValidator
+	Extractors map[string]SlotExtractor
+}
+
+// SlotExtractor can be used to extract custom slots.
+type SlotExtractor interface {
+	// Extract can be used to extract custom slots.
+	Extract(domain *rasa.Domain, tracker *rasa.Tracker,
+		dispatcher responses.ResponseDispatcher) (extractedValue interface{}, valueFound bool)
 }
 
 // Run is executed whenever Rasa Open Source sends a request to validate this form.
@@ -29,6 +36,13 @@ func (action *FormValidationAction) Run(tracker *rasa.Tracker, domain *rasa.Doma
 
 	var newEvents []events.Event
 
+	for slotName, extractor := range action.Extractors {
+		if extractedValue, valueFound := extractor.Extract(domain, tracker, dispatcher); valueFound {
+			tracker.Slots[slotName] = extractedValue
+			tracker.Events = append(tracker.Events, &events.SlotSet{Name: slotName, Value: extractedValue})
+		}
+	}
+
 	slotsToValidate := tracker.SlotsToValidate()
 	for slotName, slotValue := range *slotsToValidate {
 		if validator, ok := action.Validators[slotName]; ok {
@@ -37,6 +51,9 @@ func (action *FormValidationAction) Run(tracker *rasa.Tracker, domain *rasa.Doma
 			} else {
 				newEvents = append(newEvents, &events.SlotSet{Name: slotName, Value: nil})
 			}
+		} else {
+			// no validator function provided
+			newEvents = append(newEvents, &events.SlotSet{Name: slotName, Value: slotValue})
 		}
 	}
 

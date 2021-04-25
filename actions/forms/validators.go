@@ -10,7 +10,7 @@ type SlotValidator interface {
 	// IsValid checks if a slot candidate is valid and can be used to fill a slot.
 	// Returns the validated slot value and `true` if the value is valid.
 	IsValid(value interface{}, domain *rasa.Domain, tracker *rasa.Tracker,
-		dispatcher responses.ResponseDispatcher) (interface{}, bool)
+		dispatcher responses.ResponseDispatcher) (validatedValue interface{}, isValid bool)
 }
 
 // DefaultValidator is a validator which only checks that the value is not `nil` before filling a slot.
