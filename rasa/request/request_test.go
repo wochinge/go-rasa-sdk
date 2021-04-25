@@ -36,8 +36,22 @@ func TestParsedDomainActions(t *testing.T) {
 
 	domain := parsed.Domain
 
-	expectedForms := [3]string{"sales_form", "subscribe_newsletter_form", "suggestion_form"}
-	assert.ElementsMatch(t, domain.Forms, expectedForms)
+	expectedForms := map[string]interface{}{
+		"restaurant_form": map[string]interface{}{
+			"required_slots": map[string]interface{}{
+				"cuisine": []interface{}{
+					map[string]interface{}{"type": "from_entity", "entity": "cuisine"},
+				},
+			}},
+		"other_form": map[string]interface{}{
+			"num_people": []interface{}{
+				map[string]interface{}{"type": "from_entity", "entity": "number"},
+			},
+		},
+	}
+	for key, content := range expectedForms {
+		assert.Equal(t, domain.Forms[key], content)
+	}
 
 	expectedActions := []string{"action_chitchat",
 		"action_default_ask_affirmation",

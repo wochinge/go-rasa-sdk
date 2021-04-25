@@ -9,10 +9,21 @@ import (
 	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 )
 
+const testFormName = "test_form"
+
+type ExactMatchValidator struct {
+	toMatch string
+}
+
+func (v *ExactMatchValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracker,
+	_ responses.ResponseDispatcher) (interface{}, bool) {
+	return value, value == v.toMatch
+}
+
 func TestFormRun(t *testing.T) {
 	validators, extractors := make(map[string]SlotValidator), make(map[string]SlotExtractor)
 	formValidator := FormValidationAction{
-		"test_form", validators, extractors,
+		"test_form", validators, extractors, nil,
 	}
 
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
@@ -32,7 +43,7 @@ func TestFormValidSlot(t *testing.T) {
 	extractors := make(map[string]SlotExtractor)
 	formName := "test_form"
 	formValidator := FormValidationAction{
-		formName, validators, extractors,
+		formName, validators, extractors, nil,
 	}
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
@@ -60,7 +71,7 @@ func TestFormInValidSlot(t *testing.T) {
 	extractors := make(map[string]SlotExtractor)
 	formName := "test_form"
 	formValidator := FormValidationAction{
-		formName, validators, extractors,
+		formName, validators, extractors, nil,
 	}
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
@@ -103,7 +114,7 @@ func TestExtractCustomSlot(t *testing.T) {
 	}}
 	formName := "test_form"
 	formValidator := FormValidationAction{
-		formName, validators, extractors,
+		formName, validators, extractors, nil,
 	}
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
@@ -129,7 +140,7 @@ func TestExtractCustomSlotIfNotFound(t *testing.T) {
 	}}
 	formName := "test_form"
 	formValidator := FormValidationAction{
-		formName, validators, extractors,
+		formName, validators, extractors, nil,
 	}
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
@@ -153,7 +164,7 @@ func TestExtractCustomSlotAndValidate(t *testing.T) {
 	}}
 	formName := "test_form"
 	formValidator := FormValidationAction{
-		formName, validators, extractors,
+		formName, validators, extractors, nil,
 	}
 	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
 		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
@@ -167,6 +178,43 @@ func TestExtractCustomSlotAndValidate(t *testing.T) {
 
 	expected := []events.Event{
 		&events.SlotSet{Name: slotName, Value: "green"},
+	}
+	assert.ElementsMatch(t, expected, newEvents)
+}
+
+type ConstantSlotRequester struct {
+	slotToRequest interface{}
+}
+
+func (v *ConstantSlotRequester) NextSlot(_ *rasa.Domain, tracker *rasa.Tracker,
+	_ responses.ResponseDispatcher) (string, bool) {
+	if v.slotToRequest == nil {
+		return "", false
+	}
+
+	return v.slotToRequest.(string), true
+}
+
+func TestRequestNextSlot(t *testing.T) {
+	slotName := "color"
+
+	validators, extractors := make(map[string]SlotValidator), make(map[string]SlotExtractor)
+	formName := "test_form"
+	formValidator := FormValidationAction{
+		formName, validators, extractors, &ConstantSlotRequester{"color"},
+	}
+	tracker := rasa.Tracker{ActiveLoop: rasa.ActiveLoop{Name: testFormName},
+		Slots: map[string]interface{}{requestedSlot: nil, slotName: "green"},
+		Events: []events.Event{
+			&events.SlotSet{Name: "bla", Value: 5},
+			&events.Action{Name: formName},
+		}}
+	tracker.LatestMessage.Entities = []events.Entity{{Name: slotName, Value: "green"}}
+
+	newEvents := formValidator.Run(&tracker, &rasa.Domain{}, responses.NewDispatcher())
+
+	expected := []events.Event{
+		&events.SlotSet{Name: requestedSlot, Value: "color"},
 	}
 	assert.ElementsMatch(t, expected, newEvents)
 }
