@@ -13,7 +13,7 @@ Rasa Open Source (>= 2.0). Version 1 of the `go-rasa-sdk` is compatible with Ras
 To install the SDK run
 
 ```bash
-go get github.com/wochinge/go-rasa-sdk
+go get github.com/wochinge/go-rasa-sdk/v2
 ```
 
 ## Usage
