@@ -1,9 +1,9 @@
 {
   "next_action": "action_hello_world",
   "tracker": {
-    "active_loop": {
+    "active_form": {
       "name": "my-form",
-      "is_interrupted": true,
+      "validate": true,
       "rejected": false,
       "trigger_message": {}
     }

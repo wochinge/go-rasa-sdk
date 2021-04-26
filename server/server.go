@@ -4,11 +4,10 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/actions"
 	"github.com/wochinge/go-rasa-sdk/rasa/request"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -28,17 +27,17 @@ type errorResponse struct {
 
 // Serve runs the action server on the provided port.
 // Supplied actions will be executed upon request from Rasa Open Source.
-func Serve(port int, customActions ...actions.Action) {
-	setup(customActions)
+func Serve(port int, actions ...actions.Action) {
+	setup(actions)
 
-	err := http.ListenAndServe(address(port), GetRouter(customActions...))
+	err := http.ListenAndServe(address(port), GetRouter(actions...))
 
 	tearDown(err)
 }
 
-func setup(customActions []actions.Action) {
+func setup(actions []actions.Action) {
 	log.SetLevel(log.InfoLevel)
-	logAvailableActions(customActions)
+	logAvailableActions(actions)
 }
 
 func address(port int) string {
@@ -52,9 +51,9 @@ func tearDown(err error) {
 	}
 }
 
-func logAvailableActions(customActions []actions.Action) {
+func logAvailableActions(actions []actions.Action) {
 	var actionNames []string
-	for _, action := range customActions {
+	for _, action := range actions {
 		actionNames = append(actionNames, action.Name())
 	}
 
@@ -65,10 +64,10 @@ func logAvailableActions(customActions []actions.Action) {
 // By default this is the `health` endpoint which can be used for health checks and
 // the `/webhook` endpoint which Rasa Open Source calls to execute a custom action.
 // There should only be a need to call this if you want to add custom endpoints.
-func GetRouter(customActions ...actions.Action) http.Handler {
+func GetRouter(actions ...actions.Action) http.Handler {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/health", health).Methods("GET", "OPTIONS")
-	router.HandleFunc("/webhook", runAction(customActions)).Methods("POST")
+	router.HandleFunc("/webhook", runAction(actions)).Methods("POST")
 
 	return router
 }
@@ -100,7 +99,7 @@ func runAction(availableActions []actions.Action) func(http.ResponseWriter, *htt
 			return
 		}
 
-		responseBody, err := actions.ExecuteAction(&actionRequest, availableActions)
+		responseBody, err := actions.ExecuteAction(actionRequest, availableActions)
 
 		if err == nil {
 			sendJSONResponse(w, responseBody, http.StatusOK)

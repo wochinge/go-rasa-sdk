@@ -3,7 +3,6 @@ package actions
 
 import (
 	"fmt"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/wochinge/go-rasa-sdk/logging"
 	"github.com/wochinge/go-rasa-sdk/rasa"
@@ -34,7 +33,7 @@ func (e *ExecutionRejectedError) Error() string {
 }
 
 // ExecuteAction executes the custom action which was requested by Rasa Open Source.
-func ExecuteAction(actionRequest *request.CustomActionRequest,
+func ExecuteAction(actionRequest request.CustomActionRequest,
 	availableActions []Action) (map[string]interface{}, error) {
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 
@@ -61,8 +60,8 @@ func ExecuteAction(actionRequest *request.CustomActionRequest,
 	return actionResponse(newEvents, dispatcher), nil
 }
 
-func actionFor(name string, customActions []Action) Action {
-	for _, action := range customActions {
+func actionFor(name string, actions []Action) Action {
+	for _, action := range actions {
 		if action.Name() == name {
 			return action
 		}

@@ -3,16 +3,14 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestEventType(t *testing.T) {
 	types := []Type{action, sessionStarted, user, bot, userUtteranceReverted, actionReverted, restarted,
-		storyExported, followUpAction, conversationPaused, conversationResumed, slotSet, allSlotsReset, activeLoop,
-		form, loopInterrupted, formValidation, actionExecutionRejected, reminderScheduled, reminderCancelled,
-		userUtteredFeaturization, entities}
+		storyExported, followUpAction, conversationPaused, conversationResumed, slotSet, allSlotsReset, form,
+		formValidation, actionExecutionRejected, reminderScheduled, reminderCancelled}
 
 	for _, eventType := range types {
 		eventCreator, found := eventParser(Base{Type: eventType})

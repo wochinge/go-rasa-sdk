@@ -4,10 +4,9 @@ package request
 
 import (
 	"encoding/json"
-	"io"
-
 	"github.com/wochinge/go-rasa-sdk/rasa"
 	"github.com/wochinge/go-rasa-sdk/rasa/events"
+	"io"
 )
 
 // Parsed parses the payload which is sent to us from Rasa Open Source upon a request to execute a custom action.
@@ -21,6 +20,8 @@ func Parsed(requestBody io.Reader) (CustomActionRequest, error) {
 	if err := decoder.Decode(&parsedRequest); err != nil {
 		return parsedRequest, err
 	}
+
+	// parsedRequest.Domain = rasa.sanitizeDomain(parsedRequest.Domain)
 
 	if parsedRequest.Tracker.RawEvents == nil {
 		parsedRequest.Tracker.Events = []events.Event{}

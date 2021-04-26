@@ -120,25 +120,10 @@
       "utter_already_subscribed",
       "utter_also_explain_core"
     ],
-    "forms": {
-      "restaurant_form": {
-        "required_slots": {
-          "cuisine": [
-            {
-              "type": "from_entity",
-              "entity": "cuisine"
-            }
-          ]
-        }
-      },
-      "other_form": {
-        "num_people": [
-          {
-            "type": "from_entity",
-            "entity": "number"
-          }
-        ]
-      }
-    }
+    "forms": [
+      "sales_form",
+      "subscribe_newsletter_form",
+      "suggestion_form"
+    ]
   }
 }
