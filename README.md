@@ -104,18 +104,32 @@ func main() {
         // the name of your form which should be specified in the `forms` section
         // in your `domain.yml`
         FormName: "age_form",
-		FormName:      "restaurant_form",
         // Validators for slot candidates
         Validators: map[string][]forms.SlotValidator{
             // AgeValidator will validate that the age is not a negative number.
             "age": {&AgeValidator{}},
         },
+        // Extractors specify functions to extract slot candidates.
+        Extractors: map[string]forms.SlotExtractor{}
     }
 }
 ```
 
-You can provide multiple `Validators` for each slot. If no `Validator` is given, candidates will only be required to 
-be not `nil`. To implement a `Validator` which validates that a given value is greater 0:
+To run the Go action server with your form loaded:
+
+```go
+import (
+    "github.com/wochinge/go-rasa-sdk/v2/server"
+)
+
+func main() {
+	server.Serve(server.DefaultPort, &ageForm)
+}
+```
+
+#### Slot Validators
+You can provide multiple `Validators` for each slot. To implement a `Validator` which validates that a given value is
+greater 0:
 
 ```go
 import (
@@ -135,19 +149,37 @@ func (v *AgeValidator) IsValid(value interface{}, _ *rasa.Domain, _ *rasa.Tracke
     
     return value, true
 }
-```  
+```
 
-To run the Go action server with your form loaded:
+#### Extracting Custom Slots
+You can provide multiple `Extractors` to extract custom slots. This is in line with what's described in the Rasa
+documentation [here](https://rasa.com/docs/rasa/forms#custom-slot-mappings). To implement an `Extractor` which extracts
+a slot `age` based on an entity `age`: 
 
 ```go
 import (
+    "github.com/wochinge/go-rasa-sdk/v2/actions/forms"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
     "github.com/wochinge/go-rasa-sdk/v2/server"
 )
 
-func main() {
-	server.Serve(server.DefaultPort, &ageForm)
+type AgeExtractor struct{}
+
+func (v *AgeExtractor) Extract(_ *rasa.Domain, tracker *rasa.Tracker,
+    _ responses.ResponseDispatcher) (extractedValue interface{}, valueFound bool) {
+
+    for _, entity := range tracker.LatestMessage.Entities {
+        if entity.Name == "age" {
+            return entity.Value, true
+        }
+    }
+
+    return nil, false
 }
 ```
+
+You can combine this the usage of `Validators`.
 
 ## Docker Usage
 
