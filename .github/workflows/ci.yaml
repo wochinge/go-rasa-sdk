@@ -44,7 +44,10 @@ jobs:
         with:
           go-version: '^1.14.0'
 
-      - name: Run tests
+      - name: Test v1 package
+        run: go test $(go list ./... | grep -v /examples/)
+
+      - name: Test v2 package
         # Exclude example code from coverage
         run: cd v2 && go test -coverpkg=./... -coverprofile=coverage.out $(go list ./... | grep -v /examples/)
 
