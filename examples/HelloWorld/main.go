@@ -2,10 +2,10 @@
 package main
 
 import (
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
-	"github.com/wochinge/go-rasa-sdk/server"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/server"
 )
 
 // HelloWorldAction is an action which sends the user the message "Hello world from the go-rasa-sdk!!" when it's
@@ -21,10 +21,10 @@ func (action *HelloWorldAction) Run(
 	// Your action code goes here
 
 	// Dispatching the message
-	dispatcher.Utter(responses.Message{Text: "Hello world from the go-rasa-sdk!!"})
+	dispatcher.Utter(&responses.Message{Text: "Hello world from the go-rasa-sdk!!"})
 
 	// We are not returning any events for this simple action.
-	// See all possible events to return in github.com/wochinge/go-rasa-sdk/rasa/events
+	// See all possible events to return in github.com/wochinge/go-rasa-sdk/v2/rasa/events
 	return []events.Event{}
 }
 
