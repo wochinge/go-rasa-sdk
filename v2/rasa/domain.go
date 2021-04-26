@@ -2,7 +2,7 @@
 package rasa
 
 import (
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 // Domain represents the currently loaded bot's domain.
@@ -12,7 +12,7 @@ type Domain struct {
 	// Actions which are specified in the `domain.yml`.
 	Actions []string `json:"actions"`
 	// Forms which are specified in the `domain.yml`.
-	Forms []string `json:"forms"`
+	Forms map[string]map[string]interface{} `json:"forms"`
 	// Intents which are specified in the `domain.yml`.
 	Intents []DomainIntent `json:"intents"`
 	// Slots which are specified in the `domain.yml`.
@@ -53,7 +53,7 @@ type Config struct {
 	StoreEntitiesAsSlots bool `json:"store_entities_as_slots"`
 }
 
-// SessionConfig for https://rasa.com/docs/rasa/core/domains/#session-configuration.
+// SessionConfig for https://rasa.com/docs/rasa/domain/#session-configuration.
 type SessionConfig struct {
 	// SessionExpirationTime in minutes.
 	SessionExpirationTime float64 `json:"session_expiration_time"`

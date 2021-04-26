@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
 )
 
 func TestSlotsToValidate(t *testing.T) {

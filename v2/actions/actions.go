@@ -3,12 +3,13 @@ package actions
 
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
-	"github.com/wochinge/go-rasa-sdk/logging"
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"github.com/wochinge/go-rasa-sdk/rasa/request"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/logging"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/request"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 // Action is the interface for all custom action implementations.
@@ -33,7 +34,7 @@ func (e *ExecutionRejectedError) Error() string {
 }
 
 // ExecuteAction executes the custom action which was requested by Rasa Open Source.
-func ExecuteAction(actionRequest request.CustomActionRequest,
+func ExecuteAction(actionRequest *request.CustomActionRequest,
 	availableActions []Action) (map[string]interface{}, error) {
 	actionToRun := actionFor(actionRequest.ActionToRun, availableActions)
 
@@ -60,8 +61,8 @@ func ExecuteAction(actionRequest request.CustomActionRequest,
 	return actionResponse(newEvents, dispatcher), nil
 }
 
-func actionFor(name string, actions []Action) Action {
-	for _, action := range actions {
+func actionFor(name string, customActions []Action) Action {
+	for _, action := range customActions {
 		if action.Name() == name {
 			return action
 		}

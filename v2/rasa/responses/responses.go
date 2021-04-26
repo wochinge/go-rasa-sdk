@@ -4,28 +4,28 @@ package responses
 // Interface for dispatching messages to the users.
 type ResponseDispatcher interface {
 	// Utter sends a message to the user.
-	Utter(Message)
+	Utter(*Message)
 
 	// Responses returns the messages which were dispatched and will be sent back to Rasa Open Source
 	// as part of the response body.
-	Responses() []Message
+	Responses() []*Message
 }
 
 type responseDispatcher struct {
-	responses []Message
+	responses []*Message
 }
 
-func (dispatcher *responseDispatcher) Utter(message Message) {
+func (dispatcher *responseDispatcher) Utter(message *Message) {
 	dispatcher.responses = append(dispatcher.responses, message)
 }
 
-func (dispatcher *responseDispatcher) Responses() []Message {
+func (dispatcher *responseDispatcher) Responses() []*Message {
 	return dispatcher.responses
 }
 
 // NewDispatcher returns a new `ResponseDispatcher` to send messages to the user.
 func NewDispatcher() ResponseDispatcher {
-	return &responseDispatcher{responses: []Message{}}
+	return &responseDispatcher{responses: []*Message{}}
 }
 
 // Button which should be shown to the user.

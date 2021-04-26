@@ -4,25 +4,30 @@ package events
 
 import (
 	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
-	"github.com/wochinge/go-rasa-sdk/logging"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/logging"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 // Type represents the type key which is part of each conversation event.
 type Type string
 
 const (
-	action         Type = "action"
-	user           Type = "user"
-	bot            Type = "bot"
-	sessionStarted Type = "session_started"
-	slotSet        Type = "slot"
+	action                   Type = "action"
+	user                     Type = "user"
+	userUtteredFeaturization Type = "user_featurization"
+	entities                 Type = "entities"
+	bot                      Type = "bot"
+	sessionStarted           Type = "session_started"
+	slotSet                  Type = "slot"
 
 	conversationPaused  Type = "pause"
 	conversationResumed Type = "resume"
 
+	activeLoop              Type = "active_loop"
 	form                    Type = "form"
+	loopInterrupted         Type = "loop_interrupted"
 	formValidation          Type = "form_validation"
 	actionExecutionRejected Type = "action_execution_rejected"
 
@@ -78,16 +83,20 @@ func parseBasedOnyTypeKey(base Base, raw json.RawMessage) Event {
 
 func eventParser(base Base) (func() Event, bool) {
 	eventParsers := map[Type]func() Event{
-		action:         func() Event { return &Action{Base: base} },
-		user:           func() Event { return &User{Base: base} },
-		bot:            func() Event { return &Bot{Base: base} },
-		sessionStarted: func() Event { return &SessionStarted{Base: base} },
-		slotSet:        func() Event { return &SlotSet{Base: base} },
+		action:                   func() Event { return &Action{Base: base} },
+		user:                     func() Event { return &User{Base: base} },
+		userUtteredFeaturization: func() Event { return &UserUtteredFeaturization{Base: base} },
+		entities:                 func() Event { return &EntitiesAdded{Base: base} },
+		bot:                      func() Event { return &Bot{Base: base} },
+		sessionStarted:           func() Event { return &SessionStarted{Base: base} },
+		slotSet:                  func() Event { return &SlotSet{Base: base} },
 
 		conversationPaused:  func() Event { return &ConversationPaused{Base: base} },
 		conversationResumed: func() Event { return &ConversationResumed{Base: base} },
 
+		activeLoop:              func() Event { return &ActiveLoop{Base: base} },
 		form:                    func() Event { return &Form{Base: base} },
+		loopInterrupted:         func() Event { return &LoopInterrupted{Base: base} },
 		formValidation:          func() Event { return &FormValidation{Base: base} },
 		actionExecutionRejected: func() Event { return &ActionExecutionRejected{Action: Action{Base: base}} },
 
@@ -165,7 +174,7 @@ type Action struct {
 func (*Action) EventType() Type { return action }
 
 // SessionStarted represents that a new conversation session
-// (https://rasa.com/docs/rasa/core/domains/#session-configuration) was started.
+// (https://rasa.com/docs/rasa/domain/#session-configuration) was started.
 type SessionStarted struct {
 	Base
 }
@@ -200,7 +209,7 @@ type ParseData struct {
 }
 
 // EntityFor returns the entity for a given entity name. Returns `nil` in case no entity with this name was found.
-func (data ParseData) EntityFor(name string) (interface{}, bool) {
+func (data *ParseData) EntityFor(name string) (interface{}, bool) {
 	for _, entity := range data.Entities {
 		if entity.Name == name {
 			return entity.Value, true
@@ -314,7 +323,17 @@ type AllSlotsReset struct {
 
 func (*AllSlotsReset) EventType() Type { return allSlotsReset }
 
-// Form is an event which states that a form (https://rasa.com/docs/rasa/core/forms/) was activated or deactivated.
+// ActiveLoop is an event which states that a loop / form form (https://rasa.com/docs/rasa/forms/) is active.
+type ActiveLoop struct {
+	Base
+	// Name of the form if activated. Empty if the currently active form was deactivated.
+	Name string `json:"name,omitempty"`
+}
+
+func (*ActiveLoop) EventType() Type { return activeLoop }
+
+// Form is an event which states that a form (https://rasa.com/docs/rasa/forms/) was activated or deactivated.
+// Deprecated: Please use `ActiveLoop` instead.
 type Form struct {
 	Base
 	// Name of the form if activated. Empty if the currently active form was deactivated.
@@ -323,7 +342,18 @@ type Form struct {
 
 func (*Form) EventType() Type { return form }
 
+// LoopInterrupted notifies form action whether or not to validate the user input.
+type LoopInterrupted struct {
+	Base
+	// isInterrupted is `True` if the loop execution was interrupted, and ML policies had to take over the last
+	// prediction.
+	IsInterrupted bool `json:"is_interrupted"`
+}
+
+func (*LoopInterrupted) EventType() Type { return loopInterrupted }
+
 // FormValidation instructs the form to validate or not.
+// Deprecated: Please use `LoopInterrupted` instead.
 type FormValidation struct {
 	Base
 	// Validate if potential slot candidates. If `false` don't validate slot candidates..
@@ -369,3 +399,22 @@ type ReminderCancelled struct {
 }
 
 func (*ReminderCancelled) EventType() Type { return reminderCancelled }
+
+// UserUtteredFeaturization stores whether the next action was predicted using the intent data or the
+// pure text of the user message. See https://rasa.com/docs/rasa/stories#end-to-end-training.
+type UserUtteredFeaturization struct {
+	Base
+	// Validate if potential slot candidates. If `false` don't validate slot candidates..
+	UseTextForFeaturization bool `json:"use_text_for_featurization"`
+}
+
+func (*UserUtteredFeaturization) EventType() Type { return userUtteredFeaturization }
+
+// EntitiesAdded stores entities predicted by policies. See https://rasa.com/docs/rasa/stories#end-to-end-training.
+type EntitiesAdded struct {
+	Base
+	// Entities which were part of the last user message.
+	Entities []Entity `json:"entities"`
+}
+
+func (*EntitiesAdded) EventType() Type { return entities }

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wochinge/go-rasa-sdk/actions/forms"
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
-	"github.com/wochinge/go-rasa-sdk/server"
+	"github.com/wochinge/go-rasa-sdk/v2/actions/forms"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/server"
 )
 
 // CuisineValidator validates if the provided cuisine type is a valid choice.

@@ -8,7 +8,6 @@
     "followup_action": null,
     "paused": false,
     "events": [
-
       {
         "event": "action",
         "timestamp": 1584966507.4802880287,
@@ -16,7 +15,6 @@
         "policy": null,
         "confidence": null
       },
-
       {
         "event": "user",
         "timestamp": 1585158505.1458339691,
@@ -71,7 +69,25 @@
         "input_channel": "rasa",
         "message_id": "c25928b830814f8180336745d9ad29f2"
       },
-
+      {
+        "event": "user_featurization",
+        "timestamp": 1234,
+        "use_text_for_featurization": true
+      },
+      {
+        "event": "entities",
+        "timestamp": 1234,
+        "entities": [
+          {
+            "start": 0,
+            "end": 13,
+            "value": "Windows Linux",
+            "entity": "name",
+            "confidence": 0.7906,
+            "extractor": "ner_crf"
+          }
+        ]
+      },
       {
         "event": "bot",
         "timestamp": 1234,
@@ -82,73 +98,69 @@
           "attachment": null
         }
       },
-
       {
         "event": "session_started",
         "timestamp": 1584966507.4802930355
       },
-
       {
         "event": "slot",
         "timestamp": 1560425053.3079407215,
         "name": "name",
         "value": "test"
       },
-
       {
         "event": "pause",
         "timestamp": 99.1
       },
-
       {
         "event": "resume",
         "timestamp": 99.1
       },
-
+      {
+        "event": "active_loop",
+        "timestamp": 1556550828.3499741554,
+        "name": null
+      },
       {
         "event": "form",
         "timestamp": 1556550828.3499741554,
         "name": null
       },
-
+      {
+        "event": "loop_interrupted",
+        "timestamp": 12345,
+        "is_interrupted": true
+      },
       {
         "event": "form_validation",
         "timestamp": 12345,
         "validate": false
       },
-
       {
         "event": "followup",
         "name": "next action",
         "timestamp": 99.1
       },
-
       {
         "event": "export",
         "timestamp": 99.1
       },
-
       {
         "event": "undo",
         "timestamp": 99.1
       },
-
       {
         "event": "rewind",
         "timestamp": 99.1
       },
-
       {
         "event": "restart",
         "timestamp": 1560424318.9264261723
       },
-
       {
         "event": "reset_slots",
         "timestamp": 1560424318.9264261723
       },
-
-
       {
         "event": "action_execution_rejected",
         "timestamp": 1556550399.6700005531,
@@ -156,7 +168,6 @@
         "policy": "policy_3_FormPolicy",
         "confidence": 1.0
       }
-
     ],
     "latest_input_channel": "rasa",
     "active_form": {},

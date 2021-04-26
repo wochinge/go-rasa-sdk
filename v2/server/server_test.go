@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus/hooks/test"
-	"github.com/stretchr/testify/assert"
-	"github.com/wochinge/go-rasa-sdk/actions"
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/assert"
+	"github.com/wochinge/go-rasa-sdk/v2/actions"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 func TestHealth(t *testing.T) {

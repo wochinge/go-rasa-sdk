@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/wochinge/go-rasa-sdk/logging"
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/logging"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 const requestedSlot = "requested_slot"

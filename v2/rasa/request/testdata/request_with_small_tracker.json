@@ -1,0 +1,78 @@
+{
+  "next_action": "action_hello_world",
+  "tracker": {
+    "sender_id": "wochinge",
+    "slots": {
+      "job_function": "nurse",
+      "use_case": true
+    },
+    "latest_message": {
+      "intent": {
+        "name": "ask_howold",
+        "confidence": 0.7406903505
+      },
+      "entities": [],
+      "intent_ranking": [
+        {
+          "name": "ask_howold",
+          "confidence": 0.7406903505
+        }
+      ]
+    },
+    "latest_event_time": 1584966507.4803030491,
+    "followup_action": null,
+    "paused": false,
+    "events": [
+      {
+        "event": "action",
+        "timestamp": 1584966507.4802880287,
+        "name": "action_session_start",
+        "policy": null,
+        "confidence": null
+      },
+      {
+        "event": "session_started",
+        "timestamp": 1584966507.4802930355
+      },
+      {
+        "event": "action",
+        "timestamp": 1584966507.4803030491,
+        "name": "action_listen",
+        "policy": null,
+        "confidence": null
+      },
+      {
+        "event": "user",
+        "timestamp": 1585158505.1458339691,
+        "metadata": {
+          "rasa_x_flagged": false,
+          "rasa_x_id": 4
+        },
+        "text": "hello",
+        "parse_data": {
+          "intent": {
+            "name": "greet",
+            "confidence": 0.9908843637
+          },
+          "entities": [],
+          "intent_ranking": [
+            {
+              "name": "greet",
+              "confidence": 0.9908843637
+            },
+            {
+              "name": "mood_deny",
+              "confidence": 0.004441225
+            }
+          ],
+          "text": "hello"
+        },
+        "input_channel": "rasa",
+        "message_id": "c25928b830814f8180336745d9ad29f2"
+      }
+    ],
+    "latest_input_channel": "rasa",
+    "active_form": {},
+    "latest_action_name": "action_listen"
+  }
+}

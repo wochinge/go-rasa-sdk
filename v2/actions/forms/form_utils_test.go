@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wochinge/go-rasa-sdk/rasa"
-	"github.com/wochinge/go-rasa-sdk/rasa/events"
-	"github.com/wochinge/go-rasa-sdk/rasa/responses"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 const testFormName = "test_form"

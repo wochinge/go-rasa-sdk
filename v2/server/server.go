@@ -4,10 +4,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/wochinge/go-rasa-sdk/actions"
-	"github.com/wochinge/go-rasa-sdk/rasa/request"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/wochinge/go-rasa-sdk/v2/actions"
+	"github.com/wochinge/go-rasa-sdk/v2/rasa/request"
 
 	"github.com/gorilla/mux"
 )
@@ -27,17 +28,17 @@ type errorResponse struct {
 
 // Serve runs the action server on the provided port.
 // Supplied actions will be executed upon request from Rasa Open Source.
-func Serve(port int, actions ...actions.Action) {
-	setup(actions)
+func Serve(port int, customActions ...actions.Action) {
+	setup(customActions)
 
-	err := http.ListenAndServe(address(port), GetRouter(actions...))
+	err := http.ListenAndServe(address(port), GetRouter(customActions...))
 
 	tearDown(err)
 }
 
-func setup(actions []actions.Action) {
+func setup(customActions []actions.Action) {
 	log.SetLevel(log.InfoLevel)
-	logAvailableActions(actions)
+	logAvailableActions(customActions)
 }
 
 func address(port int) string {
@@ -51,9 +52,9 @@ func tearDown(err error) {
 	}
 }
 
-func logAvailableActions(actions []actions.Action) {
+func logAvailableActions(customActions []actions.Action) {
 	var actionNames []string
-	for _, action := range actions {
+	for _, action := range customActions {
 		actionNames = append(actionNames, action.Name())
 	}
 
@@ -64,10 +65,10 @@ func logAvailableActions(actions []actions.Action) {
 // By default this is the `health` endpoint which can be used for health checks and
 // the `/webhook` endpoint which Rasa Open Source calls to execute a custom action.
 // There should only be a need to call this if you want to add custom endpoints.
-func GetRouter(actions ...actions.Action) http.Handler {
+func GetRouter(customActions ...actions.Action) http.Handler {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/health", health).Methods("GET", "OPTIONS")
-	router.HandleFunc("/webhook", runAction(actions)).Methods("POST")
+	router.HandleFunc("/webhook", runAction(customActions)).Methods("POST")
 
 	return router
 }
@@ -99,7 +100,7 @@ func runAction(availableActions []actions.Action) func(http.ResponseWriter, *htt
 			return
 		}
 
-		responseBody, err := actions.ExecuteAction(actionRequest, availableActions)
+		responseBody, err := actions.ExecuteAction(&actionRequest, availableActions)
 
 		if err == nil {
 			sendJSONResponse(w, responseBody, http.StatusOK)
