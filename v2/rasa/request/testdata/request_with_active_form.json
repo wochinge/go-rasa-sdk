@@ -1,0 +1,11 @@
+{
+  "next_action": "action_hello_world",
+  "tracker": {
+    "active_loop": {
+      "name": "my-form",
+      "is_interrupted": true,
+      "rejected": false,
+      "trigger_message": {}
+    }
+  }
+}

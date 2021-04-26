@@ -43,9 +43,9 @@ E.g. to implement an `Action` which sends a message `Hello` to the user and set 
 
 ```go
 import (
-    "github.com/wochinge/go-rasa-sdk/rasa"
-    "github.com/wochinge/go-rasa-sdk/rasa/events"
-    "github.com/wochinge/go-rasa-sdk/rasa/responses"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 type GreetAction struct{}
@@ -75,7 +75,7 @@ To run the action server on port `5055` with your implemented action:
 
 ```go
 import (
-    "github.com/wochinge/go-rasa-sdk/server"
+    "github.com/wochinge/go-rasa-sdk/v2/server"
 )
 
 func main() {
@@ -93,10 +93,10 @@ To implement a form which fills an `age` slot:
 
 ```go
 import (
-    "github.com/wochinge/go-rasa-sdk/actions/forms"
-    "github.com/wochinge/go-rasa-sdk/rasa"
-    "github.com/wochinge/go-rasa-sdk/rasa/events"
-    "github.com/wochinge/go-rasa-sdk/rasa/responses"
+    "github.com/wochinge/go-rasa-sdk/v2/actions/forms"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 func main() {
@@ -119,9 +119,9 @@ be not `nil`. To implement a `Validator` which validates that a given value is g
 
 ```go
 import (
-    "github.com/wochinge/go-rasa-sdk/rasa"
-    "github.com/wochinge/go-rasa-sdk/rasa/events"
-    "github.com/wochinge/go-rasa-sdk/rasa/responses"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/events"
+    "github.com/wochinge/go-rasa-sdk/v2/rasa/responses"
 )
 
 type AgeValidator struct{}
@@ -141,7 +141,7 @@ To run the Go action server with your form loaded:
 
 ```go
 import (
-    "github.com/wochinge/go-rasa-sdk/server"
+    "github.com/wochinge/go-rasa-sdk/v2/server"
 )
 
 func main() {

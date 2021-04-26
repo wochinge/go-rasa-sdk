@@ -1,0 +1,144 @@
+{
+  "next_action": "action_hello_world",
+  "tracker": {},
+  "domain": {
+    "config": {
+      "store_entities_as_slots": true
+    },
+    "session_config": {
+      "session_expiration_time": 123.45,
+      "carry_over_slots_to_new_session": true
+    },
+    "intents": [
+      {
+        "affirm": {
+          "use_entities": true
+        }
+      },
+      {
+        "ask_builder": {
+          "use_entities": false
+        }
+      },
+      {
+        "enter_data": {
+          "use_entities": []
+        }
+      },
+      {
+        "out_of_scope": {
+          "triggers": "respond_out_of_scope",
+          "use_entities": []
+        }
+      }
+    ],
+    "entities": [
+      "amount-of-money",
+      "company",
+      "current_api",
+      "email",
+      "entity",
+      "feedback_value",
+      "job_function",
+      "language",
+      "location",
+      "name",
+      "nlu_part",
+      "number",
+      "product",
+      "user_type"
+    ],
+    "slots": {
+      "budget": {
+        "type": "rasa.core.slots.UnfeaturizedSlot",
+        "initial_value": null,
+        "auto_fill": true
+      },
+      "current_api": {
+        "type": "rasa.core.slots.CategoricalSlot",
+        "initial_value": null,
+        "auto_fill": true,
+        "values": [
+          "dialogflow",
+          "luis",
+          "__other__"
+        ]
+      },
+      "name": {
+        "type": "rasa.core.slots.TextSlot",
+        "initial_value": null,
+        "auto_fill": true
+      },
+      "onboarding": {
+        "type": "rasa.core.slots.BooleanSlot",
+        "initial_value": null,
+        "auto_fill": true
+      }
+    },
+    "responses": {
+      "utter_already_subscribed": [
+        {
+          "text": "spam folder 🗑"
+        }
+      ],
+      "utter_ask_docs_help": [
+        {
+          "buttons": [
+            {
+              "payload": "\/affirm",
+              "title": "👍"
+            },
+            {
+              "payload": "\/deny",
+              "title": "👎"
+            }
+          ],
+          "text": "Did that help?"
+        }
+      ],
+      "utter_continue_step2": [
+        {
+          "channel": "socketio",
+          "text": "Let's continue"
+        },
+        {
+          "buttons": [
+            {
+              "payload": "\/get_started_step2",
+              "title": "Next step"
+            }
+          ],
+          "text": "Let's continue, please click the button below."
+        }
+      ]
+    },
+    "actions": [
+      "action_chitchat",
+      "action_default_ask_affirmation",
+      "action_default_fallback",
+      "respond_out_of_scope",
+      "utter_already_subscribed",
+      "utter_also_explain_core"
+    ],
+    "forms": {
+      "restaurant_form": {
+        "required_slots": {
+          "cuisine": [
+            {
+              "type": "from_entity",
+              "entity": "cuisine"
+            }
+          ]
+        }
+      },
+      "other_form": {
+        "num_people": [
+          {
+            "type": "from_entity",
+            "entity": "number"
+          }
+        ]
+      }
+    }
+  }
+}

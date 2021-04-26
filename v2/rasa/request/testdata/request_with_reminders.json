@@ -1,0 +1,31 @@
+{
+  "next_action": "action_hello_world",
+  "tracker": {
+    "sender_id": "wochinge",
+    "slots": {},
+    "latest_message": {},
+    "latest_event_time": 123,
+    "followup_action": null,
+    "paused": false,
+    "events": [
+      {
+        "event": "reminder",
+        "timestamp": 123,
+        "intent": "greet",
+        "entities": [],
+        "date_time": "2020-04-03T16:23:33.539198",
+        "name": "my reminder"
+      },
+      {
+        "event": "cancel_reminder",
+        "timestamp": 1234,
+        "intent": "greet",
+        "entities": [],
+        "name": "my reminder"
+      }
+    ],
+    "latest_input_channel": "rasa",
+    "active_form": {},
+    "latest_action_name": "action_listen"
+  }
+}
